@@ -191,7 +191,7 @@ def register_new_salon(name, owner_name, email, password, phone, city):
     
     cursor.execute("""
         INSERT INTO salons (name, slug, owner_name, email, password_hash, phone, city, subscription_plan, subscription_status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, 'Aylık PRO Salon Paketi (14 Gün Deneme)', 'ACTIVE')
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'Aylık PRO Salon Paketi (1 Gün Deneme)', 'ACTIVE')
     """, (name, slug, owner_name, email, pass_hash, phone, city))
     salon_id = cursor.lastrowid
     
