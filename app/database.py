@@ -118,6 +118,13 @@ def init_db():
     """)
 
     conn.commit()
+
+    # Ensure created_at column exists in salons table
+    try:
+        cursor.execute("ALTER TABLE salons ADD COLUMN created_at TEXT")
+        conn.commit()
+    except Exception:
+        pass
     
     # Seed default demo salon if empty
     cursor.execute("SELECT count(*) FROM salons")
@@ -447,6 +454,13 @@ def get_all_salons_admin():
 def update_salon_subscription(salon_id, new_plan):
     conn = get_db()
     cursor = conn.cursor()
+    
+    # Safely ensure created_at column exists if older DB schema
+    try:
+        cursor.execute("ALTER TABLE salons ADD COLUMN created_at TEXT")
+    except Exception:
+        pass
+
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     cursor.execute("""
         UPDATE salons 
