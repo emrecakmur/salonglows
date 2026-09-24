@@ -17,6 +17,7 @@ from app.database import (
     delete_appointment,
     add_new_package,
     increment_package_session,
+    delete_customer_package,
     add_staff_member,
     add_service_item,
     get_all_salons_admin,
@@ -253,6 +254,14 @@ async def api_add_package(request: Request, req: NewPackageRequest):
 @app.post("/api/package/use/{package_id}")
 async def api_use_session(package_id: int):
     increment_package_session(package_id)
+    return {"status": "success"}
+
+@app.post("/api/package/delete/{package_id}")
+async def api_delete_package(request: Request, package_id: int):
+    salon_id = get_session_salon_id(request)
+    if not salon_id:
+        return {"status": "error", "message": "Oturum bulunamadı"}
+    delete_customer_package(package_id, salon_id)
     return {"status": "success"}
 
 @app.post("/api/staff/add")
