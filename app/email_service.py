@@ -1,4 +1,3 @@
-email_service.py
 import os
 import smtplib
 from email.mime.text import MIMEText
