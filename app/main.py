@@ -14,6 +14,7 @@ from app.database import (
     verify_and_reset_password,
     get_salon_dashboard_data,
     add_new_appointment,
+    delete_appointment,
     add_new_package,
     increment_package_session,
     add_staff_member,
@@ -216,6 +217,14 @@ async def api_add_appointment(request: Request, req: NewAppointmentRequest):
         notes=req.notes or ""
     )
     return {"status": "success", "appointment_id": new_id}
+
+@app.post("/api/appointment/delete/{appointment_id}")
+async def api_delete_appointment(request: Request, appointment_id: int):
+    salon_id = get_session_salon_id(request)
+    if not salon_id:
+        return {"status": "error", "message": "Oturum bulunamadı"}
+    delete_appointment(appointment_id, salon_id)
+    return {"status": "success"}
 
 @app.post("/api/package/add")
 async def api_add_package(request: Request, req: NewPackageRequest):
