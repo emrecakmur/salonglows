@@ -235,7 +235,7 @@
 
                             <div class="pt-2 border-t border-slate-800 flex justify-between items-center text-xs">
                                 <span class="font-black text-emerald-400">{{ "{:,.0f}".format(pkg.paid_amount).replace(',', '.') }} ₺ / {{ "{:,.0f}".format(pkg.total_price).replace(',', '.') }} ₺ Ödendi</span>
-                                <button onclick="usePackageSession({{ pkg.id }})" class="px-2.5 py-1 bg-pink-500/20 hover:bg-pink-500/30 text-pink-300 border border-pink-500/30 rounded-lg text-[10px] font-black transition">
+                                <button onclick="useSession({{ pkg.id }})" class="px-2.5 py-1 bg-pink-500/20 hover:bg-pink-500/30 text-pink-300 border border-pink-500/30 rounded-lg text-[10px] font-black transition">
                                     + 1 Seans Düş
                                 </button>
                             </div>
@@ -454,17 +454,17 @@
             <form onsubmit="submitNewService(event)" class="space-y-3 text-xs">
                 <div>
                     <label class="block font-bold text-slate-300 mb-1">Hizmet Adı</label>
-                    <input type="text" id="service-name" required placeholder="Örn: İpek Kirpik Uygulama" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold outline-none focus:ring-2 focus:ring-pink-500">
+                    <input type="text" id="srv-name" required placeholder="Örn: İpek Kirpik Uygulama" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold outline-none focus:ring-2 focus:ring-pink-500">
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block font-bold text-slate-300 mb-1">Süre (Dakika)</label>
-                        <input type="number" id="service-duration" required value="60" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold outline-none focus:ring-2 focus:ring-pink-500">
+                        <input type="number" id="srv-duration" required value="60" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold outline-none focus:ring-2 focus:ring-pink-500">
                     </div>
                     <div>
                         <label class="block font-bold text-slate-300 mb-1">Fiyat (TL)</label>
-                        <input type="number" id="service-price" required value="800" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold outline-none focus:ring-2 focus:ring-pink-500">
+                        <input type="number" id="srv-price" required value="800" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold outline-none focus:ring-2 focus:ring-pink-500">
                     </div>
                 </div>
 
@@ -475,11 +475,29 @@
         </div>
     </div>
 
+    {% if is_expired %}
+    <!-- 24 SAAT KİLİT EKRANI MODAL -->
+    <div class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="max-w-md w-full bg-slate-900 border-2 border-pink-500/80 rounded-3xl p-8 shadow-2xl text-center space-y-6">
+            <div class="w-20 h-20 rounded-3xl bg-pink-500/20 text-pink-400 border border-pink-500/30 flex items-center justify-center text-4xl mx-auto shadow-lg">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <div>
+                <h2 class="text-2xl font-black text-white">24 Saatlik Ücretsiz Deneme Süreniz Sona Ermiştir!</h2>
+                <p class="text-xs text-slate-400 mt-2 font-medium">Salon yönetim panelinizi kesintisiz kullanmaya devam etmek için lütfen paketinizi WhatsApp üzerinden aktif edin.</p>
+            </div>
+            <a href="https://wa.me/905452772749?text=Merhaba%2C%20SalonGlow%2024%20Saatlik%20Deneme%20s%C3%BCrem%20doldu.%20Paketimi%20aktif%20etmek%20istiyorum.%20%C4%B0%C5%9Fletme%20Ad%C4%B1m%3A%20{{ salon.name }}" target="_blank" class="w-full py-4 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-black text-sm rounded-2xl transition shadow-xl block">
+                <i class="fa-brands fa-whatsapp text-lg mr-2"></i> WhatsApp İle Paketinizi Aktif Edin (05452772749)
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- JAVASCRIPT ACTIONS -->
     <script>
         async function submitNewAppointment(e) {
             e.preventDefault();
-            const data = {
+            const bodyData = {
                 customer_name: document.getElementById('appt-customer-name').value,
                 customer_phone: document.getElementById('appt-customer-phone').value,
                 service_name: document.getElementById('appt-service-name').value,
@@ -491,17 +509,19 @@
 
             const res = await fetch('/api/appointment/add', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(bodyData)
             });
-            if (res.ok) {
-                window.location.reload();
+            const data = await res.json();
+            if (data.status === 'success') {
+                alert("Yeni randevu başarıyla eklendi!");
+                location.reload();
             }
         }
 
         async function submitNewPackage(e) {
             e.preventDefault();
-            const data = {
+            const bodyData = {
                 customer_name: document.getElementById('pkg-customer-name').value,
                 customer_phone: document.getElementById('pkg-customer-phone').value,
                 package_name: document.getElementById('pkg-name').value,
@@ -512,53 +532,68 @@
 
             const res = await fetch('/api/package/add', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(bodyData)
             });
-            if (res.ok) {
-                window.location.reload();
-            }
-        }
-
-        async function usePackageSession(packageId) {
-            if (!confirm('Müşterinin seans takibinden 1 seans düşülsün mü?')) return;
-            const res = await fetch('/api/package/use/' + packageId, { method: 'POST' });
-            if (res.ok) {
-                window.location.reload();
+            const data = await res.json();
+            if (data.status === 'success') {
+                alert("Yeni seans paketi tanımlandı!");
+                location.reload();
             }
         }
 
         async function submitNewStaff(e) {
             e.preventDefault();
-            const data = {
+            const bodyData = {
                 name: document.getElementById('staff-name').value,
                 title: document.getElementById('staff-title').value
             };
+
             const res = await fetch('/api/staff/add', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(bodyData)
             });
-            if (res.ok) {
-                window.location.reload();
+            const data = await res.json();
+            if (data.status === 'success') {
+                alert("Yeni uzman kadroya eklendi!");
+                location.reload();
             }
         }
 
         async function submitNewService(e) {
             e.preventDefault();
-            const data = {
-                name: document.getElementById('service-name').value,
-                duration_minutes: parseInt(document.getElementById('service-duration').value),
-                price: parseFloat(document.getElementById('service-price').value)
+            const bodyData = {
+                name: document.getElementById('srv-name').value,
+                duration_minutes: parseInt(document.getElementById('srv-duration').value),
+                price: parseFloat(document.getElementById('srv-price').value)
             };
+
             const res = await fetch('/api/service/add', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(bodyData)
             });
-            if (res.ok) {
-                window.location.reload();
+            const data = await res.json();
+            if (data.status === 'success') {
+                alert("Hizmet listeye eklendi!");
+                location.reload();
             }
+        }
+
+        async function useSession(packageId) {
+            if (confirm("Bu müşterinin 1 seans hakkı düşülsün mü?")) {
+                const res = await fetch(`/api/package/use/${packageId}`, { method: 'POST' });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    location.reload();
+                }
+            }
+        }
+
+        function sendWaReminder(name, phone, time, service) {
+            const msg = encodeURIComponent(`Sayın ${name}, bugün saat ${time}'deki ${service} randevunuzu hatırlatmak isteriz. {{ salon.name }}.`);
+            window.open(`https://api.whatsapp.com/send?phone=${phone.replace(/\s+/g, '')}&text=${msg}`, '_blank');
         }
     </script>
 </body>
