@@ -20,6 +20,8 @@ from app.database import (
     delete_customer_package,
     add_staff_member,
     add_service_item,
+    delete_service_item,
+    update_service_item,
     get_all_salons_admin,
     update_salon_subscription,
     delete_salon_admin,
@@ -67,6 +69,12 @@ class NewStaffRequest(BaseModel):
     title: str
 
 class NewServiceRequest(BaseModel):
+    name: str
+    duration_minutes: int
+    price: float
+
+class UpdateServiceRequest(BaseModel):
+    service_id: int
     name: str
     duration_minutes: int
     price: float
@@ -213,6 +221,16 @@ async def public_booking(request: Request, slug: str):
 async def subscription_page(request: Request):
     return templates.TemplateResponse(request=request, name="subscription.html")
 
+@app.get("/api/appointments/booked-times")
+async def api_booked_times(salon_id: int, date: str):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT appointment_time FROM appointments WHERE salon_id = ? AND appointment_date = ?", (salon_id, date))
+    rows = cursor.fetchall()
+    conn.close()
+    booked = [r[0] for r in rows]
+    return {"booked_times": booked}
+
 @app.post("/api/appointment/add")
 async def api_add_appointment(request: Request, req: NewAppointmentRequest):
     salon_id = req.salon_id or get_session_salon_id(request) or 1
@@ -274,6 +292,22 @@ async def api_add_staff(request: Request, req: NewStaffRequest):
 async def api_add_service(request: Request, req: NewServiceRequest):
     salon_id = get_session_salon_id(request) or 1
     add_service_item(salon_id, req.name, req.duration_minutes, req.price)
+    return {"status": "success"}
+
+@app.post("/api/service/delete/{service_id}")
+async def api_delete_service(request: Request, service_id: int):
+    salon_id = get_session_salon_id(request)
+    if not salon_id:
+        return {"status": "error", "message": "Oturum bulunamadı"}
+    delete_service_item(service_id, salon_id)
+    return {"status": "success"}
+
+@app.post("/api/service/update")
+async def api_update_service(request: Request, req: UpdateServiceRequest):
+    salon_id = get_session_salon_id(request)
+    if not salon_id:
+        return {"status": "error", "message": "Oturum bulunamadı"}
+    update_service_item(req.service_id, salon_id, req.name, req.duration_minutes, req.price)
     return {"status": "success"}
 
 # SUPER ADMIN ROUTES
