@@ -1,6 +1,6 @@
 import os
 import uvicorn
-from fastapi import FastAPI, Request, Form, Response
+from fastapi import FastAPI, Request, Form, Response, BackgroundTasks
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
@@ -20,6 +20,7 @@ from app.database import (
     add_service_item,
     get_db
 )
+from app.email_service import send_password_reset_email
 
 app = FastAPI(title="SalonGlow Multi-Tenant B2B SaaS Platform")
 
@@ -116,22 +117,20 @@ async def login_submit(
 async def forgot_password_page(request: Request):
     return templates.TemplateResponse(request=request, name="forgot_password.html")
 
-from app.email_service import send_password_reset_email
-
 @app.post("/forgot-password", response_class=HTMLResponse)
-async def forgot_password_submit(request: Request, email: str = Form(...)):
+async def forgot_password_submit(request: Request, background_tasks: BackgroundTasks, email: str = Form(...)):
     code = create_password_reset_code(email)
     if not code:
         return templates.TemplateResponse(request=request, name="forgot_password.html", context={
             "error": "Bu e-posta adresine ait kayıtlı salon bulunamadı."
         })
         
-    email_sent = send_password_reset_email(email, code)
+    background_tasks.add_task(send_password_reset_email, email, code)
     
     return templates.TemplateResponse(request=request, name="forgot_password.html", context={
         "email": email,
         "step": 2,
-        "is_email_sent": email_sent,
+        "is_email_sent": True,
         "success": f"{email} adresinize 6 haneli doğrulama kodu e-posta olarak gönderildi! Lütfen e-posta kutunuzu (spam klasörünü dahil) kontrol edin."
     })
 
