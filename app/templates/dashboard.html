@@ -315,11 +315,16 @@
 
                 <!-- Active Salon Services list -->
                 <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-6 shadow-xl">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-base font-black text-white flex items-center gap-2">
-                            <i class="fa-solid fa-spa text-pink-400"></i> Verilen Hizmetler & Fiyatlar
-                        </h3>
-                        <button onclick="openNewServiceModal()" class="text-xs font-bold text-pink-400 hover:underline">+ Hizmet Ekle</button>
+                    <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
+                        <div>
+                            <h3 class="text-base font-black text-white flex items-center gap-2">
+                                <i class="fa-solid fa-spa text-pink-400"></i> Verilen Hizmetler & Fiyatlar
+                            </h3>
+                            <p class="text-[11px] text-slate-400">Müşterilerinizin randevu alırken göreceği hizmet ve fiyat listesi</p>
+                        </div>
+                        <button onclick="openNewServiceModal()" class="px-3.5 py-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-extrabold text-xs rounded-xl shadow-md transition transform active:scale-95 flex items-center gap-1.5 border border-pink-400/30">
+                            <i class="fa-solid fa-circle-plus text-sm"></i> + Yeni Hizmet Ekle
+                        </button>
                     </div>
 
                     <div class="space-y-2.5">
@@ -338,6 +343,13 @@
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                             </div>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-6 border border-dashed border-slate-700 rounded-xl">
+                            <p class="text-xs text-slate-400 font-medium mb-3">Henüz salonunuza özel bir hizmet eklenmedi.</p>
+                            <button onclick="openNewServiceModal()" class="px-4 py-2 bg-pink-500/20 hover:bg-pink-500/30 text-pink-300 border border-pink-500/40 rounded-xl text-xs font-bold transition inline-flex items-center gap-1.5">
+                                <i class="fa-solid fa-plus"></i> İlk Hizmetinizi Ekle
+                            </button>
                         </div>
                         {% endfor %}
                     </div>
