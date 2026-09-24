@@ -1,53 +1,46 @@
 import os
-import socket
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-
-# Force IPv4 resolution on Render (fixes [Errno 101] Network is unreachable IPv6 bug)
-orig_getaddrinfo = socket.getaddrinfo
-def getaddrinfo_ipv4(*args, **kwargs):
-    results = orig_getaddrinfo(*args, **kwargs)
-    ipv4_results = [r for r in results if r[0] == socket.AF_INET]
-    return ipv4_results if ipv4_results else results
-socket.getaddrinfo = getaddrinfo_ipv4
+import requests
 
 def send_password_reset_email(target_email: str, reset_code: str) -> bool:
-    smtp_server = os.getenv("SMTP_SERVER", "smtp.gmail.com")
-    smtp_user = os.getenv("SMTP_USER", "").strip()
-    smtp_password = os.getenv("SMTP_PASSWORD", "").strip()
+    resend_api_key = os.getenv("RESEND_API_KEY", "").strip()
 
-    if not smtp_user or not smtp_password:
-        print("[SMTP Error] SMTP_USER or SMTP_PASSWORD not set.")
+    if not resend_api_key:
+        print("[Resend Error] RESEND_API_KEY is not set in Environment Variables.")
         return False
 
     try:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = f"SalonGlow - Şifre Sıfırlama Kodunuz: {reset_code}"
-        msg["From"] = smtp_user
-        msg["To"] = target_email
+        url = "https://api.resend.com/emails"
+        headers = {
+            "Authorization": f"Bearer {resend_api_key}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "from": "SalonGlow <onboarding@resend.dev>",
+            "to": [target_email],
+            "subject": f"SalonGlow - Şifre Sıfırlama Kodunuz: {reset_code}",
+            "html": f"""
+            <div style="font-family: Arial, sans-serif; padding: 24px; background-color: #0f172a; color: #ffffff; border-radius: 16px; max-width: 480px; margin: 0 auto; border: 1px solid #334155;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h1 style="color: #ffffff; font-size: 24px; font-weight: 800; margin: 0;">Salon<span style="color: #ec4899;">Glow</span></h1>
+                    <p style="color: #94a3b8; font-size: 13px; margin-top: 4px;">Şifre Sıfırlama Kodu</p>
+                </div>
+                
+                <p style="font-size: 14px; color: #cbd5e1;">Merhaba,</p>
+                <p style="font-size: 14px; color: #cbd5e1;">SalonGlow hesabınız için şifre yenileme talebinde bulundunuz. 6 haneli doğrulama kodunuz:</p>
+                
+                <div style="background-color: #1e293b; border: 1px solid #475569; padding: 18px; text-align: center; border-radius: 12px; margin: 24px 0;">
+                    <span style="font-size: 32px; font-weight: 900; letter-spacing: 6px; color: #f472b6; font-family: monospace;">{reset_code}</span>
+                </div>
+                
+                <p style="font-size: 12px; color: #94a3b8; text-align: center;">Bu kod 15 dakika boyunca geçerlidir.</p>
+            </div>
+            """
+        }
 
-        text_content = f"Merhaba,\n\nSalonGlow hesabınız için 6 haneli doğrulama kodunuz: {reset_code}\n"
-        html_content = f"""
-        <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #0f172a; color: #ffffff; border-radius: 12px;">
-            <h2 style="color: #ec4899;">SalonGlow</h2>
-            <p>Merhaba,</p>
-            <p>SalonGlow hesabınız için 6 haneli doğrulama kodunuz:</p>
-            <h1 style="color: #ec4899; letter-spacing: 5px;">{reset_code}</h1>
-            <p style="font-size: 12px; color: #94a3b8;">Bu kod 15 dakika geçerlidir.</p>
-        </div>
-        """
+        r = requests.post(url, headers=headers, json=payload, timeout=10)
+        print(f"[Resend API] Status: {r.status_code}, Body: {r.text}")
+        return r.status_code in [200, 201]
 
-        msg.attach(MIMEText(text_content, "plain", "utf-8"))
-        msg.attach(MIMEText(html_content, "html", "utf-8"))
-
-        with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as server:
-            server.starttls()
-            server.login(smtp_user, smtp_password)
-            server.sendmail(smtp_user, target_email, msg.as_string())
-
-        print(f"[SMTP SUCCESS - IPv4] Email successfully delivered to {target_email}")
-        return True
     except Exception as e:
-        print(f"[SMTP Error] Failed to send email to {target_email}: {e}")
+        print(f"[Resend API Error] {e}")
         return False
