@@ -351,6 +351,13 @@ def add_new_appointment(salon_id, customer_name, customer_phone, staff_name, ser
     conn.close()
     return new_id
 
+def delete_appointment(appointment_id, salon_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM appointments WHERE id = ? AND salon_id = ?", (appointment_id, salon_id))
+    conn.commit()
+    conn.close()
+
 def add_new_package(salon_id, customer_name, customer_phone, package_name, total_sessions, total_price, paid_amount):
     conn = get_db()
     cursor = conn.cursor()
