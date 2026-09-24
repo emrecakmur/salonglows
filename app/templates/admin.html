@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SalonGlow | SaaS Kurucu & Super Admin Paneli</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+
+    {% if not is_admin %}
+    <!-- ADMIN LOGIN FORM -->
+    <div class="fixed inset-0 bg-slate-950 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6 text-center">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-white text-2xl mx-auto shadow-lg">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div>
+                <h2 class="text-2xl font-black text-white">SalonGlow Super Admin Girişi</h2>
+                <p class="text-xs text-slate-400 mt-1">Yalnızca kurucu yetkili girişi için şifrenizi giriniz.</p>
+            </div>
+
+            {% if error %}
+            <div class="bg-red-500/20 border border-red-500/30 text-red-400 p-3 rounded-xl text-xs font-bold">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form action="/super-admin/login" method="POST" class="space-y-4">
+                <div>
+                    <input type="password" name="admin_password" required placeholder="Admin Giriş Şifresi" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-pink-500 text-center font-bold tracking-widest text-sm">
+                </div>
+                <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-extrabold rounded-xl transition shadow-lg text-sm">
+                    Giriş Yap
+                </button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+
+    <!-- HEADER NAVBAR -->
+    <header class="bg-slate-900 border-b border-slate-800 text-white sticky top-0 z-40 shadow-xl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-white text-xl font-bold shadow-lg">
+                    <i class="fa-solid fa-shield-crown"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-xl font-black tracking-tight text-white">Salon<span class="text-pink-500">Glow</span></h1>
+                        <span class="bg-pink-500/20 text-pink-400 border border-pink-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-md uppercase">Super Admin Paneli</span>
+                    </div>
+                    <p class="text-xs text-slate-400 font-medium">Tüm Kayıtlı Salonları & Üyelik Sürelerini Yönetin</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <a href="/dashboard" target="_blank" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-xs transition border border-slate-700 flex items-center gap-1.5">
+                    <i class="fa-solid fa-gauge"></i> Demo Panele Git
+                </a>
+                <a href="/super-admin/logout" class="px-3.5 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-bold rounded-xl text-xs transition border border-red-500/30">
+                    <i class="fa-solid fa-right-from-bracket"></i> Çıkış
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
+
+        <!-- KPI CARDS -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-md">
+                <p class="text-xs font-bold text-slate-400 mb-1">Toplam Kayıtlı Salon</p>
+                <h3 class="text-3xl font-black text-white">{{ salons|length }}</h3>
+                <p class="text-[11px] text-pink-400 mt-1"><i class="fa-solid fa-store"></i> Sistemdeki tüm işletmeler</p>
+            </div>
+
+            <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-md">
+                <p class="text-xs font-bold text-slate-400 mb-1">Aktif PRO / VIP Üye</p>
+                {% set active_count = salons | selectattr('is_expired', 'equalto', False) | list | length %}
+                <h3 class="text-3xl font-black text-emerald-400">{{ active_count }}</h3>
+                <p class="text-[11px] text-emerald-400 mt-1"><i class="fa-solid fa-circle-check"></i> Kilidi açık & aktif salonlar</p>
+            </div>
+
+            <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-md">
+                <p class="text-xs font-bold text-slate-400 mb-1">Denemesi Dolanlar</p>
+                {% set expired_count = salons | selectattr('is_expired', 'equalto', True) | list | length %}
+                <h3 class="text-3xl font-black text-amber-400">{{ expired_count }}</h3>
+                <p class="text-[11px] text-amber-400 mt-1"><i class="fa-solid fa-clock"></i> Ödeme / Aktivasyon bekleyenler</p>
+            </div>
+
+            <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-md">
+                <p class="text-xs font-bold text-slate-400 mb-1">Toplam Randevu Hacmi</p>
+                {% set total_apps = salons | sum(attribute='total_appointments') %}
+                <h3 class="text-3xl font-black text-purple-400">{{ total_apps }}</h3>
+                <p class="text-[11px] text-purple-400 mt-1"><i class="fa-solid fa-calendar-check"></i> Oluşturulan toplam işlem</p>
+            </div>
+        </div>
+
+        <!-- SALONS MANAGEMENT TABLE -->
+        <div class="bg-slate-900 rounded-2xl border border-slate-800 p-6 shadow-xl space-y-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h3 class="text-lg font-black text-white flex items-center gap-2">
+                        <i class="fa-solid fa-users-gear text-pink-500"></i> Kayıtlı Salon Üyelikleri & Paket Yönetimi
+                    </h3>
+                    <p class="text-xs text-slate-400">Salon sahiplerinin paketlerini tek tıkla aktif edin veya deneme sürelerini uzatın</p>
+                </div>
+
+                <div class="w-full md:w-72">
+                    <input type="text" id="search-input" onkeyup="filterSalons()" placeholder="Salon, şehir veya yetkili ara..." class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white outline-none focus:border-pink-500">
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border-collapse" id="salons-table">
+                    <thead>
+                        <tr class="text-slate-400 border-b border-slate-800 pb-2">
+                            <th class="py-3 px-3">ID</th>
+                            <th class="py-3 px-3">Salon & Yetkili</th>
+                            <th class="py-3 px-3">Şehir</th>
+                            <th class="py-3 px-3">İletişim & WhatsApp</th>
+                            <th class="py-3 px-3">Üyelik Paketi & Durum</th>
+                            <th class="py-3 px-3">İşlem Hacmi</th>
+                            <th class="py-3 px-3 text-right">Paket Aktifleştirme İşlemleri</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60">
+                        {% for s in salons %}
+                        <tr class="hover:bg-slate-800/40 transition salon-row">
+                            <td class="py-4 px-3 font-bold text-slate-500">#{{ s.id }}</td>
+                            <td class="py-4 px-3">
+                                <div class="font-black text-white text-sm">{{ s.name }}</div>
+                                <div class="text-[11px] text-slate-400">Yetkili: {{ s.owner_name }}</div>
+                                <a href="/b/{{ s.slug }}" target="_blank" class="text-[10px] text-pink-400 hover:underline">/b/{{ s.slug }} <i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i></a>
+                            </td>
+                            <td class="py-4 px-3 font-semibold text-slate-300">{{ s.city }}</td>
+                            <td class="py-4 px-3">
+                                <div class="text-slate-300 font-mono">{{ s.phone }}</div>
+                                <div class="text-[10px] text-slate-400">{{ s.email }}</div>
+                                <a href="https://wa.me/90{{ s.phone | replace(' ', '') | replace('-', '') | replace('(', '') | replace(')', '') }}?text=Merhaba%20{{ s.owner_name }}%20Hanım/Bey%2C%20SalonGlow%20paketiniz%20hakkında%20bilgi%20vermek%20istiyorum." target="_blank" class="mt-1 inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 hover:bg-emerald-500/20 transition">
+                                    <i class="fa-brands fa-whatsapp text-xs"></i> WhatsApp İle Yaz
+                                </a>
+                            </td>
+                            <td class="py-4 px-3">
+                                <div class="font-extrabold text-slate-200 mb-1">{{ s.subscription_plan }}</div>
+                                {% if s.is_expired %}
+                                <span class="bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] font-extrabold px-2 py-0.5 rounded-md flex items-center gap-1 w-fit">
+                                    <i class="fa-solid fa-lock"></i> 24 Saat Doldu (Kilitli)
+                                </span>
+                                {% else %}
+                                <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-extrabold px-2 py-0.5 rounded-md flex items-center gap-1 w-fit">
+                                    <i class="fa-solid fa-circle-check"></i> AKTİF (Kilit Açık)
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="py-4 px-3">
+                                <div class="text-slate-300 font-bold">{{ s.total_appointments }} Randevu</div>
+                                <div class="text-[10px] text-purple-300 font-semibold">{{ s.total_packages }} Seans Paketi</div>
+                            </td>
+                            <td class="py-4 px-3 text-right">
+                                <div class="flex items-center justify-end gap-1.5 flex-wrap">
+                                    <button onclick="updateSubscription({{ s.id }}, 'Aylık PRO Salon Paketi')" title="1 Ay PRO Paket Yap (Kilit Aç)" class="px-2.5 py-1.5 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-extrabold rounded-lg text-[11px] transition shadow-sm flex items-center gap-1">
+                                        <i class="fa-solid fa-crown text-amber-300"></i> Aylık PRO
+                                    </button>
+                                    <button onclick="updateSubscription({{ s.id }}, 'Yıllık VIP Salon Paketi')" title="1 Yıl VIP Paket Yap (Kilit Aç)" class="px-2.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white font-extrabold rounded-lg text-[11px] transition shadow-sm flex items-center gap-1">
+                                        <i class="fa-solid fa-gem text-amber-300"></i> Yıllık VIP
+                                    </button>
+                                    <button onclick="updateSubscription({{ s.id }}, 'Aylık PRO Salon Paketi (1 Gün Deneme)')" title="1 Gün Denemeye Çevir" class="px-2 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-lg text-[11px] border border-slate-700 transition">
+                                        <i class="fa-solid fa-clock"></i> Deneme
+                                    </button>
+                                    <button onclick="deleteSalon({{ s.id }}, '{{ s.name }}')" title="Salonu Sil" class="p-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-bold rounded-lg text-xs transition border border-red-500/30">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        function filterSalons() {
+            var input = document.getElementById("search-input");
+            var filter = input.value.toLowerCase();
+            var rows = document.getElementsByClassName("salon-row");
+            for (var i = 0; i < rows.length; i++) {
+                var text = rows[i].innerText.toLowerCase();
+                if (text.includes(filter)) {
+                    rows[i].style.display = "";
+                } else {
+                    rows[i].style.display = "none";
+                }
+            }
+        }
+
+        async function updateSubscription(salonId, newPlan) {
+            if (confirm(`Bu salonun paketini "${newPlan}" olarak güncellemek istediğinize emin misiniz? (Kilit kalkacaktır)`)) {
+                const res = await fetch('/api/admin/update-subscription', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ salon_id: salonId, new_plan: newPlan })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    alert('✨ Salon paketi başarıyla güncellendi!');
+                    location.reload();
+                } else {
+                    alert('Bir hata oluştu: ' + data.message);
+                }
+            }
+        }
+
+        async function deleteSalon(salonId, salonName) {
+            if (confirm(`"${salonName}" salonunu ve tüm verilerini sistemden kalıcı olarak silmek istediğinize emin misiniz?`)) {
+                const res = await fetch('/api/admin/delete-salon', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ salon_id: salonId })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    alert('Salon sistemden silindi.');
+                    location.reload();
+                } else {
+                    alert('Hata oluştu.');
+                }
+            }
+        }
+    </script>
+    {% endif %}
+</body>
+</html>
