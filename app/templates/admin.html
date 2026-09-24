@@ -168,11 +168,14 @@
                             </td>
                             <td class="py-4 px-3 text-right">
                                 <div class="flex items-center justify-end gap-1.5 flex-wrap">
-                                    <button onclick="updateSubscription({{ s.id }}, 'Aylık PRO Salon Paketi')" title="1 Ay PRO Paket Yap (Kilit Aç)" class="px-2.5 py-1.5 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-extrabold rounded-lg text-[11px] transition shadow-sm flex items-center gap-1">
+                                    <button onclick="updateSubscription({{ s.id }}, 'Aylık PRO Salon Paketi')" title="1 Ay PRO Paket Yap (990 ₺)" class="px-2.5 py-1.5 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-extrabold rounded-lg text-[11px] transition shadow-sm flex items-center gap-1">
                                         <i class="fa-solid fa-crown text-amber-300"></i> Aylık PRO
                                     </button>
-                                    <button onclick="updateSubscription({{ s.id }}, 'Yıllık VIP Salon Paketi')" title="1 Yıl VIP Paket Yap (Kilit Aç)" class="px-2.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white font-extrabold rounded-lg text-[11px] transition shadow-sm flex items-center gap-1">
+                                    <button onclick="updateSubscription({{ s.id }}, 'Yıllık VIP Salon Paketi')" title="1 Yıl VIP Paket Yap" class="px-2.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white font-extrabold rounded-lg text-[11px] transition shadow-sm flex items-center gap-1">
                                         <i class="fa-solid fa-gem text-amber-300"></i> Yıllık VIP
+                                    </button>
+                                    <button onclick="updateSubscription({{ s.id }}, 'Çoklu Şube & VIP Enterprise (1.990 ₺)')" title="1.990 ₺ Çoklu Şube & Sınırsız İşletme Paketi Yap" class="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-lg text-[11px] transition shadow-sm flex items-center gap-1">
+                                        <i class="fa-solid fa-building text-cyan-300"></i> 1.990 ₺ Çoklu Şube
                                     </button>
                                     <button onclick="updateSubscription({{ s.id }}, 'Aylık PRO Salon Paketi (1 Gün Deneme)')" title="1 Gün Denemeye Çevir" class="px-2 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-lg text-[11px] border border-slate-700 transition">
                                         <i class="fa-solid fa-clock"></i> Deneme
