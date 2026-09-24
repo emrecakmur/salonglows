@@ -280,7 +280,7 @@ async def super_admin_page(request: Request):
 
 @app.post("/super-admin/login")
 async def super_admin_login(request: Request, admin_password: str = Form(...)):
-    valid_passwords = ["05452772749", "admin123456", "admin2026"]
+    valid_passwords = ["Emredadas549.", "05452772749", "admin123456", "admin2026"]
     if admin_password.strip() in valid_passwords:
         response = RedirectResponse(url="/super-admin", status_code=303)
         response.set_cookie(key="admin_session", value="true", max_age=86400*7)
