@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Randevu Al | {{ salon.name }}</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-center items-center p-4">
+
+    <!-- MOBILE BOOKING CARD CONTAINER -->
+    <div class="max-w-md w-full bg-slate-900 rounded-3xl border border-slate-800 shadow-2xl overflow-hidden my-6">
+        
+        <!-- HEADER -->
+        <div class="bg-gradient-to-r from-pink-600 to-purple-700 p-6 text-center text-white relative">
+            <div class="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md text-white mx-auto flex items-center justify-center text-2xl font-black mb-3 shadow-lg border border-white/20">
+                <i class="fa-solid fa-sparkles"></i>
+            </div>
+            <h1 class="text-xl font-black tracking-tight">{{ salon.name }}</h1>
+            <p class="text-xs text-pink-100 mt-1 flex items-center justify-center gap-1">
+                <i class="fa-solid fa-location-dot"></i> {{ salon.city }}
+            </p>
+            <span class="inline-block mt-3 bg-slate-950/40 backdrop-blur-md text-pink-200 border border-white/20 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase">
+                7/24 Canlı Online Randevu Sistemi
+            </span>
+        </div>
+
+        <!-- FORM CONTAINER -->
+        <div id="booking-step-form" class="p-6 space-y-5">
+            
+            <!-- Step 1: Select Service -->
+            <div>
+                <label class="block text-xs font-extrabold text-slate-300 mb-2 flex items-center gap-1.5">
+                    <span class="w-5 h-5 rounded-full bg-pink-500 text-slate-950 flex items-center justify-center text-[10px] font-black">1</span>
+                    Hizmet Seçin
+                </label>
+                <div class="space-y-2">
+                    {% for srv in services %}
+                    <label class="flex items-center justify-between p-3.5 rounded-2xl border border-slate-800 bg-slate-950/60 hover:border-pink-500/60 cursor-pointer transition group">
+                        <div class="flex items-center gap-3">
+                            <input type="radio" name="selected_service" value="{{ srv.name }}" data-price="{{ srv.price }}" class="text-pink-500 focus:ring-pink-500 w-4 h-4 bg-slate-900 border-slate-700" {% if loop.first %}checked{% endif %}>
+                            <div>
+                                <span class="text-xs font-bold text-slate-100 group-hover:text-pink-400 transition block">{{ srv.name }}</span>
+                                <span class="text-[10px] text-slate-400">{{ srv.duration_minutes }} Dakika</span>
+                            </div>
+                        </div>
+                        <span class="text-xs font-black text-emerald-400">{{ "{:,.0f}".format(srv.price).replace(',', '.') }} ₺</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Step 2: Select Staff -->
+            <div>
+                <label class="block text-xs font-extrabold text-slate-300 mb-2 flex items-center gap-1.5">
+                    <span class="w-5 h-5 rounded-full bg-pink-500 text-slate-950 flex items-center justify-center text-[10px] font-black">2</span>
+                    Uzman Tercihi
+                </label>
+                <select id="booking-staff" class="w-full p-3 rounded-2xl bg-slate-950 border border-slate-800 text-slate-200 text-xs font-semibold focus:ring-2 focus:ring-pink-500 outline-none">
+                    <option value="Farketmez (Herhangi Bir Uzman)">Farketmez (İlk Boş Uzman)</option>
+                    {% for st in staff %}
+                    <option value="{{ st.name }}">{{ st.name }} ({{ st.title }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Step 3: Date & Time -->
+            <div>
+                <label class="block text-xs font-extrabold text-slate-300 mb-2 flex items-center gap-1.5">
+                    <span class="w-5 h-5 rounded-full bg-pink-500 text-slate-950 flex items-center justify-center text-[10px] font-black">3</span>
+                    Tarih ve Saat Seçin
+                </label>
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="date" id="booking-date" required class="p-3 rounded-2xl bg-slate-950 border border-slate-800 text-slate-200 text-xs font-semibold focus:ring-2 focus:ring-pink-500 outline-none">
+                    <select id="booking-time" class="p-3 rounded-2xl bg-slate-950 border border-slate-800 text-slate-200 text-xs font-semibold focus:ring-2 focus:ring-pink-500 outline-none">
+                        <option value="10:00">10:00 - Boş</option>
+                        <option value="11:30">11:30 - Boş</option>
+                        <option value="13:00">13:00 - Boş</option>
+                        <option value="14:30">14:30 - Boş</option>
+                        <option value="16:00">16:00 - Boş</option>
+                        <option value="17:30">17:30 - Boş</option>
+                        <option value="19:00">19:00 - Boş</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Step 4: Contact Details -->
+            <div>
+                <label class="block text-xs font-extrabold text-slate-300 mb-2 flex items-center gap-1.5">
+                    <span class="w-5 h-5 rounded-full bg-pink-500 text-slate-950 flex items-center justify-center text-[10px] font-black">4</span>
+                    İletişim Bilgileriniz
+                </label>
+                <div class="space-y-2 text-xs">
+                    <input type="text" id="booking-name" required placeholder="Adınız Soyadınız" class="w-full p-3 rounded-2xl bg-slate-950 border border-slate-800 text-slate-200 font-semibold focus:ring-2 focus:ring-pink-500 outline-none">
+                    <input type="tel" id="booking-phone" required placeholder="WhatsApp Telefon Numaranız (05XX XXX XX XX)" class="w-full p-3 rounded-2xl bg-slate-950 border border-slate-800 text-slate-200 font-semibold focus:ring-2 focus:ring-pink-500 outline-none">
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button onclick="confirmBooking()" class="w-full py-3.5 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-black text-sm rounded-2xl transition shadow-xl flex items-center justify-center gap-2 mt-4">
+                <i class="fa-solid fa-check-double"></i> Randevuyu Onayla ve Gönder
+            </button>
+
+        </div>
+
+        <!-- SUCCESS CONFIRMATION STATE (HIDDEN BY DEFAULT) -->
+        <div id="booking-success" class="hidden p-8 text-center space-y-4">
+            <div class="w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto text-3xl font-black border border-emerald-500/30">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h2 class="text-xl font-black text-white">Randevunuz Başarıyla Oluşturuldu!</h2>
+            <p class="text-xs text-slate-300 leading-relaxed">
+                Tebrikler, randevu talebiniz <strong class="text-pink-400">{{ salon.name }}</strong> sistemine ulaştı. 
+                Randevu zamanından önce WhatsApp üzerinden tarafınıza otomatik hatırlatma mesajı gönderilecektir.
+            </p>
+
+            <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-left text-xs space-y-2 text-slate-300">
+                <div><span class="text-slate-500">Müşteri:</span> <strong id="res-name" class="text-white"></strong></div>
+                <div><span class="text-slate-500">Hizmet:</span> <strong id="res-service" class="text-pink-400"></strong></div>
+                <div><span class="text-slate-500">Tarih & Saat:</span> <strong id="res-datetime" class="text-emerald-400"></strong></div>
+            </div>
+
+            <button onclick="location.reload()" class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-2xl text-xs transition">
+                Yeni Randevu Oluştur
+            </button>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="bg-slate-950 py-3 text-center text-[10px] text-slate-600 border-t border-slate-800">
+            Powered by <strong>SalonnPRO SaaS</strong> &copy; 2026
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('booking-date').valueAsDate = new Date();
+
+        async function confirmBooking() {
+            const name = document.getElementById('booking-name').value.trim();
+            const phone = document.getElementById('booking-phone').value.trim();
+
+            if (!name || !phone) {
+                alert("Lütfen Ad Soyad ve WhatsApp Telefon numaranızı girin.");
+                return;
+            }
+
+            const radios = document.getElementsByName('selected_service');
+            let selectedService = "Cilt Bakımı";
+            let price = 1000;
+            for (let r of radios) {
+                if (r.checked) {
+                    selectedService = r.value;
+                    price = parseFloat(r.getAttribute('data-price')) || 1000;
+                    break;
+                }
+            }
+
+            const date = document.getElementById('booking-date').value;
+            const time = document.getElementById('booking-time').value;
+            const staff = document.getElementById('booking-staff').value;
+
+            const bodyData = {
+                customer_name: name,
+                customer_phone: phone,
+                service_name: selectedService,
+                staff_name: staff,
+                appointment_date: date,
+                appointment_time: time,
+                price: price
+            };
+
+            const res = await fetch('/api/appointment/add', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(bodyData)
+            });
+            const data = await res.json();
+
+            if (data.status === 'success') {
+                document.getElementById('res-name').innerText = name;
+                document.getElementById('res-service').innerText = selectedService;
+                document.getElementById('res-datetime').innerText = `${date} saat ${time}`;
+
+                document.getElementById('booking-step-form').classList.add('hidden');
+                document.getElementById('booking-success').classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
