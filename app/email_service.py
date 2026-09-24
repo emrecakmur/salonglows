@@ -1,7 +1,16 @@
 import os
+import socket
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+
+# Force IPv4 resolution on Render (fixes [Errno 101] Network is unreachable IPv6 bug)
+orig_getaddrinfo = socket.getaddrinfo
+def getaddrinfo_ipv4(*args, **kwargs):
+    results = orig_getaddrinfo(*args, **kwargs)
+    ipv4_results = [r for r in results if r[0] == socket.AF_INET]
+    return ipv4_results if ipv4_results else results
+socket.getaddrinfo = getaddrinfo_ipv4
 
 def send_password_reset_email(target_email: str, reset_code: str) -> bool:
     smtp_server = os.getenv("SMTP_SERVER", "smtp.gmail.com")
@@ -32,22 +41,13 @@ def send_password_reset_email(target_email: str, reset_code: str) -> bool:
         msg.attach(MIMEText(text_content, "plain", "utf-8"))
         msg.attach(MIMEText(html_content, "html", "utf-8"))
 
-        # Try SSL Port 465 (Works 100% on Cloud platforms like Render)
-        try:
-            with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
-                server.login(smtp_user, smtp_password)
-                server.sendmail(smtp_user, target_email, msg.as_string())
-            print(f"[SMTP SUCCESS - SSL 465] Email successfully sent to {target_email}")
-            return True
-        except Exception as e_ssl:
-            print(f"[SMTP SSL 465 Fallback] {e_ssl}, trying TLS 587...")
-            with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as server:
-                server.starttls()
-                server.login(smtp_user, smtp_password)
-                server.sendmail(smtp_user, target_email, msg.as_string())
-            print(f"[SMTP SUCCESS - TLS 587] Email successfully sent to {target_email}")
-            return True
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as server:
+            server.starttls()
+            server.login(smtp_user, smtp_password)
+            server.sendmail(smtp_user, target_email, msg.as_string())
 
+        print(f"[SMTP SUCCESS - IPv4] Email successfully delivered to {target_email}")
+        return True
     except Exception as e:
         print(f"[SMTP Error] Failed to send email to {target_email}: {e}")
         return False
