@@ -24,7 +24,7 @@ def send_password_reset_email(target_email: str, reset_code: str) -> bool:
         msg.attach(MIMEText(text_content, "plain", "utf-8"))
         msg.attach(MIMEText(html_content, "html", "utf-8"))
 
-        with smtplib.SMTP(smtp_server, smtp_port) as server:
+        with smtplib.SMTP(smtp_server, smtp_port, timeout=5) as server:
             server.starttls()
             server.login(smtp_user, smtp_password)
             server.sendmail(smtp_user, target_email, msg.as_string())
