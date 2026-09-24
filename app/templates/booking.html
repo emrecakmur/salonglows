@@ -46,7 +46,7 @@
                     {% for srv in services %}
                     <label class="flex items-center justify-between p-3.5 rounded-2xl border border-slate-800 bg-slate-950/60 hover:border-pink-500/60 cursor-pointer transition group">
                         <div class="flex items-center gap-3">
-                            <input type="radio" name="selected_service" value="{{ srv.name }}" data-price="{{ srv.price }}" class="text-pink-500 focus:ring-pink-500 w-4 h-4 bg-slate-900 border-slate-700" {% if loop.first %}checked{% endif %}>
+                            <input type="radio" name="selected_service" value="{{ srv.name }}" data-price="{{ srv.price }}" class="text-pink-500 focus:ring-pink-500 w-4 h-4 bg-slate-900 border-slate-700" {% if loop.first %}checked{% endif %} onchange="toggleCustomServiceInput()">
                             <div>
                                 <span class="text-xs font-bold text-slate-100 group-hover:text-pink-400 transition block">{{ srv.name }}</span>
                                 <span class="text-[10px] text-slate-400">{{ srv.duration_minutes }} Dakika</span>
@@ -55,6 +55,22 @@
                         <span class="text-xs font-black text-emerald-400">{{ "{:,.0f}".format(srv.price).replace(',', '.') }} ₺</span>
                     </label>
                     {% endfor %}
+
+                    <!-- CUSTOM SERVICE OPTION -->
+                    <label class="flex items-center justify-between p-3.5 rounded-2xl border border-slate-800 bg-slate-950/60 hover:border-pink-500/60 cursor-pointer transition group">
+                        <div class="flex items-center gap-3">
+                            <input type="radio" name="selected_service" value="custom_service" id="radio-custom-service" data-price="0" class="text-pink-500 focus:ring-pink-500 w-4 h-4 bg-slate-900 border-slate-700" onchange="toggleCustomServiceInput()">
+                            <div>
+                                <span class="text-xs font-bold text-pink-400 group-hover:text-pink-300 transition block">✨ Diğer (İstediğiniz Hizmeti Yazın)</span>
+                                <span class="text-[10px] text-slate-400">Listede olmayan özel işlem veya talep</span>
+                            </div>
+                        </div>
+                        <span class="text-[11px] font-extrabold text-slate-400">Özel Hizmet</span>
+                    </label>
+
+                    <div id="custom-service-container" class="hidden mt-2">
+                        <input type="text" id="custom-service-name" placeholder="İstediğiniz hizmeti yazınız (Örn: İpek Kirpik, Protez Bakımı vb.)" class="w-full p-3 rounded-2xl bg-slate-950 border border-pink-500/50 text-slate-200 text-xs font-semibold outline-none focus:border-pink-500">
+                    </div>
                 </div>
             </div>
 
@@ -76,20 +92,16 @@
             <div>
                 <label class="block text-xs font-extrabold text-slate-300 mb-2 flex items-center gap-1.5">
                     <span class="w-5 h-5 rounded-full bg-pink-500 text-slate-950 flex items-center justify-center text-[10px] font-black">3</span>
-                    Tarih ve Saat Seçin
+                    Tarih ve Saat Seçin (15'er Dk Aralıklar)
                 </label>
                 <div class="grid grid-cols-2 gap-3">
                     <input type="date" id="booking-date" required class="p-3 rounded-2xl bg-slate-950 border border-slate-800 text-slate-200 text-xs font-semibold focus:ring-2 focus:ring-pink-500 outline-none">
                     <select id="booking-time" class="p-3 rounded-2xl bg-slate-950 border border-slate-800 text-slate-200 text-xs font-semibold focus:ring-2 focus:ring-pink-500 outline-none">
-                        <option value="10:00">10:00 - Boş</option>
-                        <option value="11:30">11:30 - Boş</option>
-                        <option value="13:00">13:00 - Boş</option>
-                        <option value="14:30">14:30 - Boş</option>
-                        <option value="16:00">16:00 - Boş</option>
-                        <option value="17:30">17:30 - Boş</option>
-                        <option value="19:00">19:00 - Boş</option>
+                        <!-- Dynamically filled by JS -->
+                        <option value="10:00">Yükleniyor...</option>
                     </select>
                 </div>
+                <p class="text-[10px] text-slate-400 mt-1 ml-1"><i class="fa-solid fa-circle-info text-pink-400"></i> Dolu saatler kırmızı renkte ve kapalıdır.</p>
             </div>
 
             <!-- Step 4: Contact Details -->
@@ -135,12 +147,73 @@
 
         <!-- FOOTER -->
         <div class="bg-slate-950 py-3 text-center text-[10px] text-slate-600 border-t border-slate-800">
-            Powered by <strong>SalonnPRO SaaS</strong> &copy; 2026
+            Powered by <strong>SalonGlow SaaS</strong> &copy; 2026
         </div>
     </div>
 
     <script>
-        document.getElementById('booking-date').valueAsDate = new Date();
+        const defaultTimes = [
+            "09:00", "09:15", "09:30", "09:45",
+            "10:00", "10:15", "10:30", "10:45",
+            "11:00", "11:15", "11:30", "11:45",
+            "12:00", "12:15", "12:30", "12:45",
+            "13:00", "13:15", "13:30", "13:45",
+            "14:00", "14:15", "14:30", "14:45",
+            "15:00", "15:15", "15:30", "15:45",
+            "16:00", "16:15", "16:30", "16:45",
+            "17:00", "17:15", "17:30", "17:45",
+            "18:00", "18:15", "18:30", "18:45",
+            "19:00", "19:15", "19:30", "19:45", "20:00"
+        ];
+
+        function toggleCustomServiceInput() {
+            const customRadio = document.getElementById('radio-custom-service');
+            const customContainer = document.getElementById('custom-service-container');
+            if (customRadio.checked) {
+                customContainer.classList.remove('hidden');
+                document.getElementById('custom-service-name').focus();
+            } else {
+                customContainer.classList.add('hidden');
+            }
+        }
+
+        async function checkAvailableTimes() {
+            const salonId = {{ salon.id }};
+            const dateVal = document.getElementById('booking-date').value;
+            if (!dateVal) return;
+
+            try {
+                const res = await fetch(`/api/appointments/booked-times?salon_id=${salonId}&date=${dateVal}`);
+                const data = await res.json();
+                const booked = data.booked_times || [];
+
+                const selectElem = document.getElementById('booking-time');
+                selectElem.innerHTML = '';
+
+                defaultTimes.forEach(time => {
+                    const opt = document.createElement('option');
+                    opt.value = time;
+                    if (booked.includes(time)) {
+                        opt.innerText = `${time} - DOLU ❌`;
+                        opt.disabled = true;
+                        opt.className = "text-red-400 font-bold bg-slate-900";
+                    } else {
+                        opt.innerText = `${time} - UYGUN (BOŞ) ✅`;
+                        opt.disabled = false;
+                        opt.className = "text-emerald-400 font-bold bg-slate-900";
+                    }
+                    selectElem.appendChild(opt);
+                });
+            } catch (err) {
+                console.error("Saatler kontrol edilirken hata oluştu:", err);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('booking-date').valueAsDate = new Date();
+            document.getElementById('booking-date').addEventListener('change', checkAvailableTimes);
+            checkAvailableTimes();
+        });
 
         async function confirmBooking() {
             const name = document.getElementById('booking-name').value.trim();
@@ -154,19 +227,38 @@
             const radios = document.getElementsByName('selected_service');
             let selectedService = "Cilt Bakımı";
             let price = 1000;
-            for (let r of radios) {
-                if (r.checked) {
-                    selectedService = r.value;
-                    price = parseFloat(r.getAttribute('data-price')) || 1000;
-                    break;
+            const customRadio = document.getElementById('radio-custom-service');
+
+            if (customRadio && customRadio.checked) {
+                const customVal = document.getElementById('custom-service-name').value.trim();
+                if (!customVal) {
+                    alert("Lütfen istediğiniz özel hizmet adını giriniz.");
+                    return;
+                }
+                selectedService = customVal + " (Özel Talep)";
+                price = 0;
+            } else {
+                for (let r of radios) {
+                    if (r.checked) {
+                        selectedService = r.value;
+                        price = parseFloat(r.getAttribute('data-price')) || 1000;
+                        break;
+                    }
                 }
             }
 
             const date = document.getElementById('booking-date').value;
-            const time = document.getElementById('booking-time').value;
+            const timeElem = document.getElementById('booking-time');
+            const time = timeElem.value;
             const staff = document.getElementById('booking-staff').value;
 
+            if (timeElem.options[timeElem.selectedIndex] && timeElem.options[timeElem.selectedIndex].disabled) {
+                alert("Seçtiğiniz saat doludur, lütfen başka bir saat seçiniz.");
+                return;
+            }
+
             const bodyData = {
+                salon_id: {{ salon.id }},
                 customer_name: name,
                 customer_phone: phone,
                 service_name: selectedService,
