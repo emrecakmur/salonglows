@@ -376,6 +376,13 @@ def increment_package_session(package_id):
     conn.commit()
     conn.close()
 
+def delete_customer_package(package_id, salon_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM customer_packages WHERE id = ? AND salon_id = ?", (package_id, salon_id))
+    conn.commit()
+    conn.close()
+
 def add_staff_member(salon_id, name, title, color='#ec4899'):
     conn = get_db()
     cursor = conn.cursor()
