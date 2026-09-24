@@ -59,7 +59,14 @@
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-pink-500/20 text-pink-400 flex items-center justify-center text-lg font-bold">
                     <i class="fa-solid fa-link"></i>
-                            <div class="flex items-center gap-2 w-full md:w-auto">
+                </div>
+                <div>
+                    <h4 class="text-sm font-bold text-white">Salonunuza Özel Canlı Randevu Alma Adresiniz</h4>
+                    <p class="text-xs text-slate-300">Müşterilerinizin telefonda sıra beklemeden 7/24 randevu alması için bu linki Instagram profilinize ekleyin.</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 w-full md:w-auto">
                 <input type="text" id="bio-link-input" readonly value="https://salonglows.onrender.com/b/{{ salon.slug }}" class="bg-slate-950 border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-mono text-pink-300 w-full md:w-80 outline-none">
                 <button onclick="copyBioLink()" class="px-3 py-1.5 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-extrabold rounded-xl text-xs transition shadow-md flex items-center gap-1.5 shrink-0">
                     <i class="fa-solid fa-copy"></i> Kopyala
@@ -89,6 +96,15 @@
                     }
                 });
             </script>
+        </div>
+
+        <!-- STATS / KPI CARDS -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/80 shadow-md">
+                <div class="flex justify-between items-start mb-2">
+                    <p class="text-xs font-bold text-slate-400">Bugünkü Randevular</p>
+                    <span class="w-8 h-8 rounded-lg bg-pink-500/20 text-pink-400 flex items-center justify-center text-sm font-bold"><i class="fa-solid fa-calendar-check"></i></span>
+                </div>
                 <h3 class="text-2xl font-black text-white">{{ today_count }} Randevu</h3>
                 <p class="text-[11px] text-emerald-400 mt-1"><i class="fa-solid fa-arrow-trend-up"></i> Tümü Onaylandı</p>
             </div>
@@ -133,64 +149,48 @@
                             <h3 class="text-lg font-black text-white flex items-center gap-2">
                                 <i class="fa-solid fa-calendar-day text-pink-500"></i> Bugünkü Randevu Akışı
                             </h3>
-                            <p class="text-xs text-slate-400">Günün tüm saatlik randevuları ve WhatsApp onay durumları</p>
+                            <p class="text-xs text-slate-400">Görüntüle, saatlik randevuları ve WhatsApp onay durumları</p>
                         </div>
-
-                        <button onclick="openNewAppointmentModal()" class="px-4 py-2 bg-pink-600 hover:bg-pink-500 text-white font-extrabold rounded-xl text-xs transition shadow-md flex items-center gap-1.5">
+                        <button onclick="document.getElementById('modal-add-appointment').classList.remove('hidden')" class="px-3.5 py-2 bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-md">
                             <i class="fa-solid fa-plus"></i> Yeni Randevu Ekle
                         </button>
                     </div>
 
-                    <!-- Appointments Table -->
+                    <!-- TABLE -->
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs border-collapse">
-                            <thead>
-                                <tr class="text-slate-400 border-b border-slate-700/80 pb-2">
-                                    <th class="py-3 px-3">Saat</th>
-                                    <th class="py-3 px-3">Müşteri</th>
-                                    <th class="py-3 px-3">Hizmet</th>
-                                    <th class="py-3 px-3">Uzman</th>
-                                    <th class="py-3 px-3">Tutar</th>
-                                    <th class="py-3 px-3">WhatsApp</th>
-                                    <th class="py-3 px-3 text-right">İşlem</th>
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px] font-extrabold tracking-wider border-b border-slate-700">
+                                <tr>
+                                    <th class="py-3 px-4">Saat</th>
+                                    <th class="py-3 px-4">Müşteri</th>
+                                    <th class="py-3 px-4">Hizmet</th>
+                                    <th class="py-3 px-4">Uzman</th>
+                                    <th class="py-3 px-4">Tutar</th>
+                                    <th class="py-3 px-4 text-center">WhatsApp</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-slate-700/50">
-                                {% if not today_appointments %}
-                                <tr>
-                                    <td colspan="7" class="py-8 text-center text-slate-500 text-xs">
-                                        Henüz bugün için randevu bulunmuyor. Randevu eklemek için sağ üstteki butona basabilirsiniz.
+                            <tbody class="divide-y divide-slate-700/60 font-medium">
+                                {% for appt in today_appointments %}
+                                <tr class="hover:bg-slate-750 transition">
+                                    <td class="py-3.5 px-4 font-black text-pink-400">{{ appt.appointment_time }}</td>
+                                    <td class="py-3.5 px-4">
+                                        <div class="font-extrabold text-white">{{ appt.customer_name }}</div>
+                                        <div class="text-[10px] text-slate-400">{{ appt.customer_phone }}</div>
                                     </td>
-                                </tr>
-                                {% endif %}
-                                {% for app in today_appointments %}
-                                <tr class="hover:bg-slate-700/30 transition">
-                                    <td class="py-3.5 px-3 font-black text-pink-400">{{ app.appointment_time }}</td>
-                                    <td class="py-3.5 px-3">
-                                        <div class="font-bold text-white">{{ app.customer_name }}</div>
-                                        <div class="text-[10px] text-slate-400">{{ app.customer_phone }}</div>
-                                    </td>
-                                    <td class="py-3.5 px-3 font-semibold text-slate-200">{{ app.service_name }}</td>
-                                    <td class="py-3.5 px-3">
-                                        <span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-slate-700 text-slate-200">
-                                            {{ app.staff_name }}
-                                        </span>
-                                    </td>
-                                    <td class="py-3.5 px-3 font-black text-emerald-400">{{ "{:,.0f}".format(app.price).replace(',', '.') }} ₺</td>
-                                    <td class="py-3.5 px-3">
-                                        {% if app.wa_sent %}
-                                        <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-extrabold px-2 py-0.5 rounded-md flex items-center gap-1 w-fit">
-                                            <i class="fa-brands fa-whatsapp"></i> Hatırlatıldı
-                                        </span>
-                                        {% else %}
-                                        <span class="bg-slate-700 text-slate-400 text-[10px] font-bold px-2 py-0.5 rounded-md">Bekliyor</span>
+                                    <td class="py-3.5 px-4 font-semibold text-slate-200">{{ appt.service_name }}</td>
+                                    <td class="py-3.5 px-4"><span class="bg-slate-900 border border-slate-700 px-2 py-1 rounded-md text-[10px] font-bold">{{ appt.staff_name }}</span></td>
+                                    <td class="py-3.5 px-4 font-black text-emerald-400">{{ "{:,.0f}".format(appt.price).replace(',', '.') }} ₺</td>
+                                    <td class="py-3.5 px-4 text-center">
+                                        {% if appt.wa_sent %}
+                                        <a href="https://wa.me/90{{ appt.customer_phone.replace(' ', '').replace('(', '').replace(')', '') }}?text=Say%C4%B1n%20{{ appt.customer_name }}%2C%20{{ appt.appointment_time }}%20saatindeki%20{{ appt.service_name }}%20randevunuzu%20hat%C4%B1rlat%C4%B1r%C4%B1z.%20{{ salon.name }}" target="_blank" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-lg text-[10px] font-extrabold inline-flex items-center gap-1 hover:bg-emerald-500/30">
+                                            <i class="fa-brands fa-whatsapp text-xs"></i> Hatırlatıldı
+                                        </a>
                                         {% endif %}
                                     </td>
-                                    <td class="py-3.5 px-3 text-right">
-                                        <button onclick="sendWaReminder('{{ app.customer_name }}', '{{ app.customer_phone }}', '{{ app.appointment_time }}', '{{ app.service_name }}')" title="WhatsApp Hatırlatması Gönder" class="p-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 font-bold rounded-lg transition">
-                                            <i class="fa-brands fa-whatsapp text-sm"></i>
-                                        </button>
-                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="py-8 text-center text-slate-500 font-semibold">Bugün için henüz kaydedilmiş randevu bulunmuyor.</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -198,112 +198,105 @@
                     </div>
                 </div>
 
-                <!-- SEANS & PAKET TAKİP TABLOSU -->
+                <!-- PACKAGES & SEANS TRACKING -->
                 <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-6 shadow-xl">
                     <div class="flex justify-between items-center mb-6">
                         <div>
                             <h3 class="text-lg font-black text-white flex items-center gap-2">
-                                <i class="fa-solid fa-cubes text-purple-400"></i> Müşteri Seans & Paket Takibi
+                                <i class="fa-solid fa-boxes-packing text-purple-400"></i> Müşteri Seans & Paket Takibi
                             </h3>
-                            <p class="text-xs text-slate-400">Epilasyon ve medikal cilt bakım paket seans hakları</p>
+                            <p class="text-xs text-slate-400">Epilasyon ve medikal cilt bakım paketinde kalan seans durumları</p>
                         </div>
-
-                        <button onclick="openNewPackageModal()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-extrabold rounded-xl text-xs transition shadow-md flex items-center gap-1.5">
+                        <button onclick="document.getElementById('modal-add-package').classList.remove('hidden')" class="px-3.5 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-md">
                             <i class="fa-solid fa-plus"></i> Yeni Paket Tanımla
                         </button>
                     </div>
 
-                    <div class="space-y-4">
-                        {% if not packages %}
-                        <p class="text-center text-slate-500 text-xs py-4">Henüz seans paketi tanımlanmadı.</p>
-                        {% endif %}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {% for pkg in packages %}
-                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div class="bg-slate-900 border border-slate-700/80 p-4 rounded-xl flex flex-col justify-between space-y-3">
                             <div>
-                                <div class="flex items-center gap-2">
-                                    <h4 class="font-bold text-white text-sm">{{ pkg.customer_name }}</h4>
-                                    <span class="text-[10px] text-slate-400">({{ pkg.customer_phone }})</span>
+                                <div class="flex justify-between items-start">
+                                    <h4 class="font-extrabold text-white text-sm">{{ pkg.customer_name }}</h4>
+                                    <span class="bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[10px] font-black px-2 py-0.5 rounded-md">{{ pkg.package_name }}</span>
                                 </div>
-                                <p class="text-xs text-purple-300 font-semibold mt-0.5">{{ pkg.package_name }}</p>
+                                <p class="text-[11px] text-slate-400 mt-0.5"><i class="fa-solid fa-phone text-[9px] mr-1"></i> {{ pkg.customer_phone }}</p>
                             </div>
 
-                            <!-- Progress Bar -->
-                            <div class="w-full md:w-64">
+                            <div>
                                 <div class="flex justify-between text-xs font-extrabold mb-1">
-                                    <span class="text-slate-400">Tamamlanan Seans</span>
-                                    <span class="text-pink-400">{{ pkg.completed_sessions }} / {{ pkg.total_sessions }} Seans</span>
+                                    <span class="text-slate-300">Seans Durumu</span>
+                                    <span class="text-pink-400">{{ pkg.completed_sessions }} / {{ pkg.total_sessions }} Tamamlandı</span>
                                 </div>
                                 <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden border border-slate-700">
-                                    {% set percent = (pkg.completed_sessions / pkg.total_sessions * 100) %}
-                                    <div class="bg-gradient-to-r from-pink-500 to-purple-600 h-full rounded-full transition-all" style="width: {{ percent }}%;"></div>
+                                    <div class="bg-gradient-to-r from-pink-500 to-purple-500 h-full rounded-full" style="width: {{ (pkg.completed_sessions / pkg.total_sessions * 100)|int }}%"></div>
                                 </div>
                             </div>
 
-                            <!-- Action -->
-                            <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 pt-2 md:pt-0 border-slate-800">
-                                <div class="text-right">
-                                    <span class="text-[10px] text-slate-400 block">Paket Tutarı</span>
-                                    <span class="text-sm font-black text-emerald-400">{{ "{:,.0f}".format(pkg.total_price).replace(',', '.') }} ₺</span>
-                                </div>
-
-                                <button onclick="useSession({{ pkg.id }})" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-pink-400 font-extrabold text-xs rounded-xl border border-pink-500/30 transition flex items-center gap-1">
-                                    <i class="fa-solid fa-check"></i> 1 Seans Düş
+                            <div class="pt-2 border-t border-slate-800 flex justify-between items-center text-xs">
+                                <span class="font-black text-emerald-400">{{ "{:,.0f}".format(pkg.paid_amount).replace(',', '.') }} ₺ / {{ "{:,.0f}".format(pkg.total_price).replace(',', '.') }} ₺ Ödendi</span>
+                                <button onclick="usePackageSession({{ pkg.id }})" class="px-2.5 py-1 bg-pink-500/20 hover:bg-pink-500/30 text-pink-300 border border-pink-500/30 rounded-lg text-[10px] font-black transition">
+                                    + 1 Seans Düş
                                 </button>
                             </div>
                         </div>
+                        {% else %}
+                        <div class="col-span-2 py-8 text-center text-slate-500 font-semibold">Henüz seans paketi tanımlanmadı.</div>
                         {% endfor %}
                     </div>
                 </div>
 
             </div>
 
-            <!-- RIGHT COLS: STAFF & SERVICES MANAGEMENT -->
-            <div class="space-y-6">
+            <!-- RIGHT 1 COL: STAFF GRID & SERVICE LIST MANAGEMENT -->
+            <div class="space-y-8">
                 
-                <!-- Staff Members List -->
+                <!-- STAFF MEMBERS -->
                 <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-6 shadow-xl">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-base font-black text-white flex items-center gap-2">
-                            <i class="fa-solid fa-user-tie text-blue-400"></i> Ekip & Uzmanlar
+                            <i class="fa-solid fa-user-ninja text-blue-400"></i> Ekip & Uzmanlar
                         </h3>
-                        <button onclick="openNewStaffModal()" class="text-xs font-bold text-pink-400 hover:underline">+ Uzman Ekle</button>
+                        <button onclick="document.getElementById('modal-add-staff').classList.remove('hidden')" class="text-xs font-bold text-pink-400 hover:underline">
+                            + Uzman Ekle
+                        </button>
                     </div>
 
                     <div class="space-y-3">
                         {% for st in staff %}
-                        <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-700/60 flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black shadow-inner" style="background-color: {{ st.color }};">
-                                    {{ st.name[0] }}
-                                </div>
-                                <div>
-                                    <h4 class="font-bold text-white text-xs">{{ st.name }}</h4>
-                                    <p class="text-[10px] text-slate-400">{{ st.title }}</p>
-                                </div>
+                        <div class="bg-slate-900 border border-slate-700/70 p-3 rounded-xl flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-sm" style="background-color: {{ st.color or '#ec4899' }};">
+                                {{ st.name[0] }}
                             </div>
-                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-emerald-500/50 shadow-md"></span>
+                            <div class="flex-1">
+                                <h4 class="font-extrabold text-white text-xs">{{ st.name }}</h4>
+                                <p class="text-[10px] text-slate-400">{{ st.title }}</p>
+                            </div>
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm" title="Müsait"></span>
                         </div>
                         {% endfor %}
                     </div>
                 </div>
 
-                <!-- Active Salon Services list -->
+                <!-- SERVICE PRICE LIST -->
                 <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-6 shadow-xl">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-base font-black text-white flex items-center gap-2">
-                            <i class="fa-solid fa-spa text-pink-400"></i> Verilen Hizmetler
+                            <i class="fa-solid fa-scissors text-pink-400"></i> Verilen Hizmetler
                         </h3>
-                        <button onclick="openNewServiceModal()" class="text-xs font-bold text-pink-400 hover:underline">+ Hizmet Ekle</button>
+                        <button onclick="document.getElementById('modal-add-service').classList.remove('hidden')" class="text-xs font-bold text-pink-400 hover:underline">
+                            + Hizmet Ekle
+                        </button>
                     </div>
 
                     <div class="space-y-2.5">
                         {% for srv in services %}
-                        <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-700/60 flex justify-between items-center text-xs">
+                        <div class="bg-slate-900 border border-slate-700/70 p-3 rounded-xl flex justify-between items-center text-xs">
                             <div>
-                                <h4 class="font-bold text-slate-200">{{ srv.name }}</h4>
-                                <span class="text-[10px] text-slate-400">{{ srv.duration_minutes }} Dakika</span>
+                                <h4 class="font-bold text-white">{{ srv.name }}</h4>
+                                <p class="text-[10px] text-slate-400">{{ srv.duration_minutes }} Dakika</p>
                             </div>
-                            <span class="font-black text-emerald-400">{{ "{:,.0f}".format(srv.price).replace(',', '.') }} ₺</span>
+                            <span class="font-black text-emerald-400 text-sm">{{ "{:,.0f}".format(srv.price).replace(',', '.') }} ₺</span>
                         </div>
                         {% endfor %}
                     </div>
@@ -315,304 +308,257 @@
 
     </main>
 
-    <!-- NEW APPOINTMENT MODAL -->
-    <div id="new-app-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 hidden p-4">
-        <div class="bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-700 relative text-white">
-            <button onclick="closeNewAppointmentModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-            
-            <h3 class="text-lg font-black mb-4 flex items-center gap-2 text-pink-400">
-                <i class="fa-solid fa-calendar-plus"></i> Yeni Randevu Oluştur
-            </h3>
+    <!-- MODAL 1: ADD NEW APPOINTMENT -->
+    <div id="modal-add-appointment" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl relative space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="font-black text-lg text-white">Yeni Randevu Kaydı</h3>
+                <button onclick="document.getElementById('modal-add-appointment').classList.add('hidden')" class="text-slate-400 hover:text-white font-bold text-lg">&times;</button>
+            </div>
 
             <form onsubmit="submitNewAppointment(event)" class="space-y-3 text-xs">
                 <div>
                     <label class="block font-bold text-slate-300 mb-1">Müşteri Ad Soyad</label>
-                    <input type="text" id="modal-app-name" required placeholder="Örn. Zeynep Yılmaz" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-pink-500">
+                    <input type="text" id="appt-customer-name" required placeholder="Örn: Merve Kaya" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold outline-none focus:ring-2 focus:ring-pink-500">
                 </div>
 
                 <div>
                     <label class="block font-bold text-slate-300 mb-1">WhatsApp Telefon</label>
-                    <input type="text" id="modal-app-phone" required placeholder="0532 000 0000" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-pink-500">
+                    <input type="tel" id="appt-customer-phone" required placeholder="0532 999 8877" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold outline-none focus:ring-2 focus:ring-pink-500">
                 </div>
 
-                <div>
-                    <label class="block font-bold text-slate-300 mb-1">Hizmet Seçin</label>
-                    <select id="modal-app-service" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-pink-500 font-semibold">
-                        {% for srv in services %}
-                        <option value="{{ srv.name }}" data-price="{{ srv.price }}">{{ srv.name }} ({{ "{:,.0f}".format(srv.price).replace(',', '.') }} ₺)</option>
-                        {% endfor %}
-                    </select>
-                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-300 mb-1">Hizmet Seçin</label>
+                        <select id="appt-service-name" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold outline-none focus:ring-2 focus:ring-pink-500">
+                            {% for srv in services %}
+                            <option value="{{ srv.name }}">{{ srv.name }} ({{ srv.price|int }}₺)</option>
+                            {% endfor %}
+                        </select>
+                    </div>
 
-                <div>
-                    <label class="block font-bold text-slate-300 mb-1">Uzman Seçin</label>
-                    <select id="modal-app-staff" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-pink-500 font-semibold">
-                        {% for st in staff %}
-                        <option value="{{ st.name }}">{{ st.name }} ({{ st.title }})</option>
-                        {% endfor %}
-                    </select>
+                    <div>
+                        <label class="block font-bold text-slate-300 mb-1">Uzman Seçin</label>
+                        <select id="appt-staff-name" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold outline-none focus:ring-2 focus:ring-pink-500">
+                            {% for st in staff %}
+                            <option value="{{ st.name }}">{{ st.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block font-bold text-slate-300 mb-1">Tarih</label>
-                        <input type="date" id="modal-app-date" required class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-pink-500 font-semibold">
+                        <input type="date" id="appt-date" required class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold outline-none focus:ring-2 focus:ring-pink-500">
                     </div>
+
                     <div>
                         <label class="block font-bold text-slate-300 mb-1">Saat</label>
-                        <select id="modal-app-time" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-pink-500 font-semibold">
-                            <option value="10:00">10:00</option>
-                            <option value="11:00">11:00</option>
-                            <option value="12:30">12:30</option>
-                            <option value="14:00">14:00</option>
-                            <option value="15:30">15:30</option>
-                            <option value="17:00">17:00</option>
-                            <option value="18:30">18:30</option>
-                        </select>
+                        <input type="time" id="appt-time" required value="14:00" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold outline-none focus:ring-2 focus:ring-pink-500">
                     </div>
                 </div>
 
-                <div class="pt-3">
-                    <button type="submit" class="w-full py-2.5 bg-pink-600 hover:bg-pink-500 text-white font-extrabold rounded-xl transition shadow-md">
-                        Randevuyu Kaydet & WhatsApp Onayı Gönder
-                    </button>
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">Tutar (TL)</label>
+                    <input type="number" id="appt-price" required value="1000" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold outline-none focus:ring-2 focus:ring-pink-500">
                 </div>
+
+                <button type="submit" class="w-full py-3 bg-pink-600 hover:bg-pink-700 text-white font-black text-sm rounded-xl transition shadow-lg mt-2">
+                    Randevuyu Onayla & Kaydet
+                </button>
             </form>
         </div>
     </div>
 
-    <!-- NEW PACKAGE MODAL -->
-    <div id="new-pkg-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 hidden p-4">
-        <div class="bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-700 relative text-white">
-            <button onclick="closeNewPackageModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-            
-            <h3 class="text-lg font-black mb-4 flex items-center gap-2 text-purple-400">
-                <i class="fa-solid fa-cubes"></i> Yeni Müşteri Seans Paketi Tanımla
-            </h3>
+    <!-- MODAL 2: ADD NEW PACKAGE -->
+    <div id="modal-add-package" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl relative space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="font-black text-lg text-white">Yeni Seans Paketi Tanımla</h3>
+                <button onclick="document.getElementById('modal-add-package').classList.add('hidden')" class="text-slate-400 hover:text-white font-bold text-lg">&times;</button>
+            </div>
 
             <form onsubmit="submitNewPackage(event)" class="space-y-3 text-xs">
                 <div>
                     <label class="block font-bold text-slate-300 mb-1">Müşteri Ad Soyad</label>
-                    <input type="text" id="pkg-customer-name" required placeholder="Örn. Ayşe Yılmaz" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-purple-500">
+                    <input type="text" id="pkg-customer-name" required placeholder="Örn: Elif Aksoy" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold outline-none focus:ring-2 focus:ring-pink-500">
                 </div>
 
                 <div>
                     <label class="block font-bold text-slate-300 mb-1">WhatsApp Telefon</label>
-                    <input type="text" id="pkg-customer-phone" required placeholder="0532 000 0000" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-purple-500">
+                    <input type="tel" id="pkg-customer-phone" required placeholder="0533 111 2233" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold outline-none focus:ring-2 focus:ring-pink-500">
                 </div>
 
                 <div>
                     <label class="block font-bold text-slate-300 mb-1">Paket Adı</label>
-                    <input type="text" id="pkg-name" required placeholder="Örn. 8 Seans Buz Lazer Paketi" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-purple-500">
+                    <input type="text" id="pkg-name" required placeholder="Örn: 8 Seans Tüm Vücut Lazer Epilasyon" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold outline-none focus:ring-2 focus:ring-pink-500">
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-3 gap-2">
                     <div>
-                        <label class="block font-bold text-slate-300 mb-1">Toplam Seans Hak Sayısı</label>
-                        <input type="number" id="pkg-sessions" value="8" required class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-purple-500 font-semibold">
+                        <label class="block font-bold text-slate-300 mb-1">Toplam Seans</label>
+                        <input type="number" id="pkg-total-sessions" required value="8" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold outline-none focus:ring-2 focus:ring-pink-500">
                     </div>
                     <div>
-                        <label class="block font-bold text-slate-300 mb-1">Toplam Paket Fiyatı (TL)</label>
-                        <input type="number" id="pkg-price" value="8000" required class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-purple-500 font-semibold">
+                        <label class="block font-bold text-slate-300 mb-1">Toplam Fiyat</label>
+                        <input type="number" id="pkg-total-price" required value="8000" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold outline-none focus:ring-2 focus:ring-pink-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-300 mb-1">Ödenen Miktar</label>
+                        <input type="number" id="pkg-paid-amount" required value="4000" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold outline-none focus:ring-2 focus:ring-pink-500">
                     </div>
                 </div>
 
-                <div class="pt-3">
-                    <button type="submit" class="w-full py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-extrabold rounded-xl transition shadow-md">
-                        Paketi Oluştur & Müşteriye Ekle
-                    </button>
-                </div>
+                <button type="submit" class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-black text-sm rounded-xl transition shadow-lg mt-2">
+                    Seans Paketini Tanımla
+                </button>
             </form>
         </div>
     </div>
 
-    <!-- NEW STAFF MODAL -->
-    <div id="new-staff-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 hidden p-4">
-        <div class="bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-700 relative text-white">
-            <button onclick="closeNewStaffModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-            
-            <h3 class="text-lg font-black mb-4 flex items-center gap-2 text-blue-400">
-                <i class="fa-solid fa-user-plus"></i> Yeni Uzman / Personel Ekle
-            </h3>
+    <!-- MODAL 3: ADD STAFF -->
+    <div id="modal-add-staff" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-sm rounded-2xl p-6 shadow-2xl relative space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="font-black text-lg text-white">Yeni Ekip Üyesi / Uzman</h3>
+                <button onclick="document.getElementById('modal-add-staff').classList.add('hidden')" class="text-slate-400 hover:text-white font-bold text-lg">&times;</button>
+            </div>
 
             <form onsubmit="submitNewStaff(event)" class="space-y-3 text-xs">
                 <div>
-                    <label class="block font-bold text-slate-300 mb-1">Personel Ad Soyad</label>
-                    <input type="text" id="staff-name" required placeholder="Örn. Nisa Yılmaz" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-blue-500">
+                    <label class="block font-bold text-slate-300 mb-1">Uzman Ad Soyad</label>
+                    <input type="text" id="staff-name" required placeholder="Örn: Selin Yılmaz" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold outline-none focus:ring-2 focus:ring-pink-500">
                 </div>
+
                 <div>
                     <label class="block font-bold text-slate-300 mb-1">Unvan / Uzmanlık Alanı</label>
-                    <input type="text" id="staff-title" required placeholder="Örn. Cilt Uzmanı & Estetisyen" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-blue-500">
+                    <input type="text" id="staff-title" required placeholder="Örn: Protez Tırnak & Kirpik Uzmanı" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold outline-none focus:ring-2 focus:ring-pink-500">
                 </div>
-                <div class="pt-3">
-                    <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-xl transition shadow-md">
-                        Uzmanı Kadroya Ekle
-                    </button>
-                </div>
+
+                <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-black text-sm rounded-xl transition shadow-lg mt-2">
+                    Uzmanı Ekle
+                </button>
             </form>
         </div>
     </div>
 
-    <!-- NEW SERVICE MODAL -->
-    <div id="new-service-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 hidden p-4">
-        <div class="bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-700 relative text-white">
-            <button onclick="closeNewServiceModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-            
-            <h3 class="text-lg font-black mb-4 flex items-center gap-2 text-pink-400">
-                <i class="fa-solid fa-spa"></i> Yeni Hizmet & Ücret Ekle
-            </h3>
+    <!-- MODAL 4: ADD SERVICE -->
+    <div id="modal-add-service" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-sm rounded-2xl p-6 shadow-2xl relative space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="font-black text-lg text-white">Yeni Hizmet / Fiyat Ekle</h3>
+                <button onclick="document.getElementById('modal-add-service').classList.add('hidden')" class="text-slate-400 hover:text-white font-bold text-lg">&times;</button>
+            </div>
 
             <form onsubmit="submitNewService(event)" class="space-y-3 text-xs">
                 <div>
                     <label class="block font-bold text-slate-300 mb-1">Hizmet Adı</label>
-                    <input type="text" id="srv-name" required placeholder="Örn. Keratin Saç Bakımı" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-pink-500">
+                    <input type="text" id="service-name" required placeholder="Örn: İpek Kirpik Uygulama" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold outline-none focus:ring-2 focus:ring-pink-500">
                 </div>
+
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block font-bold text-slate-300 mb-1">Süre (Dakika)</label>
-                        <input type="number" id="srv-duration" value="45" required class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-pink-500 font-semibold">
+                        <input type="number" id="service-duration" required value="60" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold outline-none focus:ring-2 focus:ring-pink-500">
                     </div>
                     <div>
-                        <label class="block font-bold text-slate-300 mb-1">Ücret (TL)</label>
-                        <input type="number" id="srv-price" value="750" required class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-pink-500 font-semibold">
+                        <label class="block font-bold text-slate-300 mb-1">Fiyat (TL)</label>
+                        <input type="number" id="service-price" required value="800" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold outline-none focus:ring-2 focus:ring-pink-500">
                     </div>
                 </div>
-                <div class="pt-3">
-                    <button type="submit" class="w-full py-2.5 bg-pink-600 hover:bg-pink-500 text-white font-extrabold rounded-xl transition shadow-md">
-                        Hizmeti Listeye Ekle
-                    </button>
-                </div>
+
+                <button type="submit" class="w-full py-3 bg-pink-600 hover:bg-pink-700 text-white font-black text-sm rounded-xl transition shadow-lg mt-2">
+                    Hizmeti Listeye Ekle
+                </button>
             </form>
         </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
+    <!-- JAVASCRIPT ACTIONS -->
     <script>
-        document.getElementById('modal-app-date').valueAsDate = new Date();
-
-        function openNewAppointmentModal() { document.getElementById('new-app-modal').classList.remove('hidden'); }
-        function closeNewAppointmentModal() { document.getElementById('new-app-modal').classList.add('hidden'); }
-
-        function openNewPackageModal() { document.getElementById('new-pkg-modal').classList.remove('hidden'); }
-        function closeNewPackageModal() { document.getElementById('new-pkg-modal').classList.add('hidden'); }
-
-        function openNewStaffModal() { document.getElementById('new-staff-modal').classList.remove('hidden'); }
-        function closeNewStaffModal() { document.getElementById('new-staff-modal').classList.add('hidden'); }
-
-        function openNewServiceModal() { document.getElementById('new-service-modal').classList.remove('hidden'); }
-        function closeNewServiceModal() { document.getElementById('new-service-modal').classList.add('hidden'); }
-
         async function submitNewAppointment(e) {
             e.preventDefault();
-            const serviceElem = document.getElementById('modal-app-service');
-            const selectedOpt = serviceElem.options[serviceElem.selectedIndex];
-            const price = parseFloat(selectedOpt.getAttribute('data-price')) || 1000;
-
-            const bodyData = {
-                customer_name: document.getElementById('modal-app-name').value,
-                customer_phone: document.getElementById('modal-app-phone').value,
-                service_name: serviceElem.value,
-                staff_name: document.getElementById('modal-app-staff').value,
-                appointment_date: document.getElementById('modal-app-date').value,
-                appointment_time: document.getElementById('modal-app-time').value,
-                price: price
+            const data = {
+                customer_name: document.getElementById('appt-customer-name').value,
+                customer_phone: document.getElementById('appt-customer-phone').value,
+                service_name: document.getElementById('appt-service-name').value,
+                staff_name: document.getElementById('appt-staff-name').value,
+                appointment_date: document.getElementById('appt-date').value || new Date().toISOString().split('T')[0],
+                appointment_time: document.getElementById('appt-time').value,
+                price: parseFloat(document.getElementById('appt-price').value)
             };
 
             const res = await fetch('/api/appointment/add', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(bodyData)
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
             });
-            const data = await res.json();
-            if (data.status === 'success') {
-                alert("Randevu başarıyla eklendi!");
-                location.reload();
+            if (res.ok) {
+                window.location.reload();
             }
         }
 
         async function submitNewPackage(e) {
             e.preventDefault();
-            const bodyData = {
+            const data = {
                 customer_name: document.getElementById('pkg-customer-name').value,
                 customer_phone: document.getElementById('pkg-customer-phone').value,
                 package_name: document.getElementById('pkg-name').value,
-                total_sessions: parseInt(document.getElementById('pkg-sessions').value),
-                total_price: parseFloat(document.getElementById('pkg-price').value),
-                paid_amount: parseFloat(document.getElementById('pkg-price').value)
+                total_sessions: parseInt(document.getElementById('pkg-total-sessions').value),
+                total_price: parseFloat(document.getElementById('pkg-total-price').value),
+                paid_amount: parseFloat(document.getElementById('pkg-paid-amount').value)
             };
 
             const res = await fetch('/api/package/add', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(bodyData)
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
             });
-            const data = await res.json();
-            if (data.status === 'success') {
-                alert("Seans paketi başarıyla tanımlandı!");
-                location.reload();
+            if (res.ok) {
+                window.location.reload();
+            }
+        }
+
+        async function usePackageSession(packageId) {
+            if (!confirm('Müşterinin seans takibinden 1 seans düşülsün mü?')) return;
+            const res = await fetch('/api/package/use/' + packageId, { method: 'POST' });
+            if (res.ok) {
+                window.location.reload();
             }
         }
 
         async function submitNewStaff(e) {
             e.preventDefault();
-            const bodyData = {
+            const data = {
                 name: document.getElementById('staff-name').value,
                 title: document.getElementById('staff-title').value
             };
-
             const res = await fetch('/api/staff/add', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(bodyData)
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
             });
-            const data = await res.json();
-            if (data.status === 'success') {
-                alert("Yeni uzman kadroya eklendi!");
-                location.reload();
+            if (res.ok) {
+                window.location.reload();
             }
         }
 
         async function submitNewService(e) {
             e.preventDefault();
-            const bodyData = {
-                name: document.getElementById('srv-name').value,
-                duration_minutes: parseInt(document.getElementById('srv-duration').value),
-                price: parseFloat(document.getElementById('srv-price').value)
+            const data = {
+                name: document.getElementById('service-name').value,
+                duration_minutes: parseInt(document.getElementById('service-duration').value),
+                price: parseFloat(document.getElementById('service-price').value)
             };
-
             const res = await fetch('/api/service/add', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(bodyData)
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
             });
-            const data = await res.json();
-            if (data.status === 'success') {
-                alert("Hizmet listeye eklendi!");
-                location.reload();
+            if (res.ok) {
+                window.location.reload();
             }
-        }
-
-        async function useSession(packageId) {
-            if (confirm("Bu müşterinin 1 seans hakkı düşülsün mü?")) {
-                const res = await fetch(`/api/package/use/${packageId}`, { method: 'POST' });
-                const data = await res.json();
-                if (data.status === 'success') {
-                    location.reload();
-                }
-            }
-        }
-
-        function sendWaReminder(name, phone, time, service) {
-            const msg = encodeURIComponent(`Sayın ${name}, bugün saat ${time}'deki ${service} randevunuzu hatırlatmak isteriz. {{ salon.name }}.`);
-            window.open(`https://api.whatsapp.com/send?phone=${phone.replace(/\s+/g, '')}&text=${msg}`, '_blank');
         }
     </script>
 </body>
