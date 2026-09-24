@@ -59,27 +59,36 @@
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-pink-500/20 text-pink-400 flex items-center justify-center text-lg font-bold">
                     <i class="fa-solid fa-link"></i>
-                </div>
-                <div>
-                    <h4 class="text-sm font-bold text-white">Salonunuza Özel Canlı Randevu Alma Adresiniz</h4>
-                    <p class="text-xs text-slate-300">Müşterilerinizin telefonda sıra beklemeden 7/24 randevu alması için bu linki Instagram profilinize ekleyin.</p>
-                </div>
-            </div>
-
-            <div class="flex items-center gap-2 w-full md:w-auto">
+                            <div class="flex items-center gap-2 w-full md:w-auto">
                 <input type="text" id="bio-link-input" readonly value="https://salonglows.onrender.com/b/{{ salon.slug }}" class="bg-slate-950 border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-mono text-pink-300 w-full md:w-80 outline-none">
+                <button onclick="copyBioLink()" class="px-3 py-1.5 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-extrabold rounded-xl text-xs transition shadow-md flex items-center gap-1.5 shrink-0">
                     <i class="fa-solid fa-copy"></i> Kopyala
                 </button>
             </div>
-        </div>
-
-        <!-- STATS / KPI CARDS -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/80 shadow-md">
-                <div class="flex justify-between items-start mb-2">
-                    <p class="text-xs font-bold text-slate-400">Bugünkü Randevular</p>
-                    <span class="w-8 h-8 rounded-lg bg-pink-500/20 text-pink-400 flex items-center justify-center text-sm font-bold"><i class="fa-solid fa-calendar-check"></i></span>
-                </div>
+            <script>
+                function copyBioLink() {
+                    var copyText = document.getElementById("bio-link-input");
+                    if (!copyText) return;
+                    copyText.select();
+                    copyText.setSelectionRange(0, 99999);
+                    try {
+                        if (navigator.clipboard && window.isSecureContext) {
+                            navigator.clipboard.writeText(copyText.value);
+                        } else {
+                            document.execCommand("copy");
+                        }
+                    } catch (err) {
+                        document.execCommand("copy");
+                    }
+                    alert("✨ Instagram Bio Linkiniz kopyalandı:\n" + copyText.value);
+                }
+                document.addEventListener("DOMContentLoaded", function() {
+                    var bioInput = document.getElementById("bio-link-input");
+                    if (bioInput) {
+                        bioInput.value = window.location.origin + "/b/{{ salon.slug }}";
+                    }
+                });
+            </script>
                 <h3 class="text-2xl font-black text-white">{{ today_count }} Randevu</h3>
                 <p class="text-[11px] text-emerald-400 mt-1"><i class="fa-solid fa-arrow-trend-up"></i> Tümü Onaylandı</p>
             </div>
