@@ -397,6 +397,24 @@ def add_service_item(salon_id, name, duration_minutes, price, category="Genel"):
     conn.commit()
     conn.close()
 
+def delete_service_item(service_id, salon_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM services WHERE id = ? AND salon_id = ?", (service_id, salon_id))
+    conn.commit()
+    conn.close()
+
+def update_service_item(service_id, salon_id, name, duration_minutes, price):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE services 
+        SET name = ?, duration_minutes = ?, price = ? 
+        WHERE id = ? AND salon_id = ?
+    """, (name, duration_minutes, price, service_id, salon_id))
+    conn.commit()
+    conn.close()
+
 # SUPER ADMIN DATABASE FUNCTIONS
 def get_all_salons_admin():
     conn = get_db()
