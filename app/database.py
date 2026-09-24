@@ -389,3 +389,55 @@ def add_service_item(salon_id, name, duration_minutes, price, category="Genel"):
     cursor.execute("INSERT INTO services (salon_id, name, duration_minutes, price, category) VALUES (?, ?, ?, ?, ?)", (salon_id, name, duration_minutes, price, category))
     conn.commit()
     conn.close()
+
+# SUPER ADMIN DATABASE FUNCTIONS
+def get_all_salons_admin():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT s.*, 
+               (SELECT COUNT(*) FROM appointments WHERE salon_id = s.id) as total_appointments,
+               (SELECT COUNT(*) FROM customer_packages WHERE salon_id = s.id) as total_packages
+        FROM salons s
+        ORDER BY s.id DESC
+    """)
+    salons = [dict(r) for r in cursor.fetchall()]
+    
+    for s in salons:
+        created_at_str = s.get('created_at')
+        is_expired = False
+        if created_at_str and 'Deneme' in s.get('subscription_plan', ''):
+            try:
+                created_dt = datetime.strptime(str(created_at_str).split('.')[0], "%Y-%m-%d %H:%M:%S")
+                elapsed_seconds = (datetime.now() - created_dt).total_seconds()
+                if elapsed_seconds >= 86400:
+                    is_expired = True
+            except Exception:
+                pass
+        s['is_expired'] = is_expired
+        
+    conn.close()
+    return salons
+
+def update_salon_subscription(salon_id, new_plan):
+    conn = get_db()
+    cursor = conn.cursor()
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cursor.execute("""
+        UPDATE salons 
+        SET subscription_plan = ?, subscription_status = 'ACTIVE', created_at = ? 
+        WHERE id = ?
+    """, (new_plan, now_str, salon_id))
+    conn.commit()
+    conn.close()
+
+def delete_salon_admin(salon_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM appointments WHERE salon_id = ?", (salon_id,))
+    cursor.execute("DELETE FROM customer_packages WHERE salon_id = ?", (salon_id,))
+    cursor.execute("DELETE FROM staff WHERE salon_id = ?", (salon_id,))
+    cursor.execute("DELETE FROM services WHERE salon_id = ?", (salon_id,))
+    cursor.execute("DELETE FROM salons WHERE id = ?", (salon_id,))
+    conn.commit()
+    conn.close()
