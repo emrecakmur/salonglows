@@ -131,7 +131,7 @@ def seed_demo_salon(cursor):
     pass_hash = hash_password("123456")
     cursor.execute("""
         INSERT INTO salons (name, slug, owner_name, email, password_hash, phone, city, subscription_plan, subscription_status)
-        VALUES ('Glamour Güzellik Salonu', 'glamour-guzellik', 'Zeynep Yılmaz', 'demo@glamour.com', ?, '0532 555 1234', 'İstanbul / Kadıköy', 'Aylık PRO Salon Paketi', 'ACTIVE')
+        VALUES ('Glamour Güzellik Salonu', 'glamour-guzellik', 'Zeynep Yılmaz', 'demo@glamour.com', ?, '0532 555 1234', 'İstanbul / Kadıköy', 'Aylık PRO Salon Paketi (1 Gün Deneme)', 'ACTIVE')
     """, (pass_hash,))
     salon_id = cursor.lastrowid
 
@@ -188,11 +188,12 @@ def register_new_salon(name, owner_name, email, password, phone, city):
         counter += 1
         
     pass_hash = hash_password(password)
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
     cursor.execute("""
-        INSERT INTO salons (name, slug, owner_name, email, password_hash, phone, city, subscription_plan, subscription_status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, 'Aylık PRO Salon Paketi (1 Gün Deneme)', 'ACTIVE')
-    """, (name, slug, owner_name, email, pass_hash, phone, city))
+        INSERT INTO salons (name, slug, owner_name, email, password_hash, phone, city, subscription_plan, subscription_status, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'Aylık PRO Salon Paketi (1 Gün Deneme)', 'ACTIVE', ?)
+    """, (name, slug, owner_name, email, pass_hash, phone, city, now_str))
     salon_id = cursor.lastrowid
     
     # Add starter staff for new salon
@@ -309,6 +310,20 @@ def get_salon_dashboard_data(salon_id):
     packages = [dict(r) for r in cursor.fetchall()]
 
     conn.close()
+
+    # Check 24-hour trial expiration
+    created_at_str = salon.get('created_at')
+    is_expired = False
+    hours_left = 24
+    if created_at_str and 'Deneme' in salon.get('subscription_plan', ''):
+        try:
+            created_dt = datetime.strptime(str(created_at_str).split('.')[0], "%Y-%m-%d %H:%M:%S")
+            elapsed_seconds = (datetime.now() - created_dt).total_seconds()
+            hours_left = max(0, int((86400 - elapsed_seconds) / 3600))
+            if elapsed_seconds >= 86400:
+                is_expired = True
+        except Exception:
+            pass
     
     return {
         "today_count": today_count,
@@ -319,7 +334,9 @@ def get_salon_dashboard_data(salon_id):
         "staff": staff,
         "services": services,
         "packages": packages,
-        "salon": salon
+        "salon": salon,
+        "is_expired": is_expired,
+        "hours_left": hours_left
     }
 
 def add_new_appointment(salon_id, customer_name, customer_phone, staff_name, service_name, appointment_date, appointment_time, price, notes=""):
