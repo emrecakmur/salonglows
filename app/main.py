@@ -116,6 +116,8 @@ async def login_submit(
 async def forgot_password_page(request: Request):
     return templates.TemplateResponse(request=request, name="forgot_password.html")
 
+from app.email_service import send_password_reset_email
+
 @app.post("/forgot-password", response_class=HTMLResponse)
 async def forgot_password_submit(request: Request, email: str = Form(...)):
     code = create_password_reset_code(email)
@@ -124,10 +126,13 @@ async def forgot_password_submit(request: Request, email: str = Form(...)):
             "error": "Bu e-posta adresine ait kayıtlı salon bulunamadı."
         })
         
+    email_sent = send_password_reset_email(email, code)
+    
     return templates.TemplateResponse(request=request, name="forgot_password.html", context={
         "email": email,
-        "generated_code": code,
-        "success": f"{email} adresine 6 haneli şifre sıfırlama kodu gönderildi!"
+        "step": 2,
+        "is_email_sent": email_sent,
+        "success": f"{email} adresinize 6 haneli doğrulama kodu e-posta olarak gönderildi! Lütfen e-posta kutunuzu (spam klasörünü dahil) kontrol edin."
     })
 
 @app.post("/reset-password", response_class=HTMLResponse)
