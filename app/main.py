@@ -19,6 +19,9 @@ from app.database import (
     increment_package_session,
     add_staff_member,
     add_service_item,
+    get_all_salons_admin,
+    update_salon_subscription,
+    delete_salon_admin,
     get_db
 )
 from app.email_service import send_password_reset_email
@@ -66,6 +69,13 @@ class NewServiceRequest(BaseModel):
     name: str
     duration_minutes: int
     price: float
+
+class AdminSubscriptionUpdateRequest(BaseModel):
+    salon_id: int
+    new_plan: str
+
+class AdminDeleteSalonRequest(BaseModel):
+    salon_id: int
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
@@ -255,6 +265,51 @@ async def api_add_staff(request: Request, req: NewStaffRequest):
 async def api_add_service(request: Request, req: NewServiceRequest):
     salon_id = get_session_salon_id(request) or 1
     add_service_item(salon_id, req.name, req.duration_minutes, req.price)
+    return {"status": "success"}
+
+# SUPER ADMIN ROUTES
+@app.get("/super-admin", response_class=HTMLResponse)
+async def super_admin_page(request: Request):
+    is_admin = request.cookies.get("admin_session") == "true"
+    salons = get_all_salons_admin() if is_admin else []
+    return templates.TemplateResponse(request=request, name="admin.html", context={
+        "is_admin": is_admin,
+        "salons": salons,
+        "error": None
+    })
+
+@app.post("/super-admin/login")
+async def super_admin_login(request: Request, admin_password: str = Form(...)):
+    valid_passwords = ["05452772749", "admin123456", "admin2026"]
+    if admin_password.strip() in valid_passwords:
+        response = RedirectResponse(url="/super-admin", status_code=303)
+        response.set_cookie(key="admin_session", value="true", max_age=86400*7)
+        return response
+    
+    return templates.TemplateResponse(request=request, name="admin.html", context={
+        "is_admin": False,
+        "salons": [],
+        "error": "Geçersiz admin şifresi!"
+    })
+
+@app.get("/super-admin/logout")
+async def super_admin_logout():
+    response = RedirectResponse(url="/super-admin", status_code=303)
+    response.delete_cookie(key="admin_session")
+    return response
+
+@app.post("/api/admin/update-subscription")
+async def api_admin_update_subscription(request: Request, req: AdminSubscriptionUpdateRequest):
+    if request.cookies.get("admin_session") != "true":
+        return {"status": "error", "message": "Yetkisiz erişim"}
+    update_salon_subscription(req.salon_id, req.new_plan)
+    return {"status": "success"}
+
+@app.post("/api/admin/delete-salon")
+async def api_admin_delete_salon(request: Request, req: AdminDeleteSalonRequest):
+    if request.cookies.get("admin_session") != "true":
+        return {"status": "error", "message": "Yetkisiz erişim"}
+    delete_salon_admin(req.salon_id)
     return {"status": "success"}
 
 if __name__ == "__main__":
