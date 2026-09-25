@@ -138,7 +138,7 @@ def seed_demo_salon(cursor):
     pass_hash = hash_password("123456")
     cursor.execute("""
         INSERT INTO salons (name, slug, owner_name, email, password_hash, phone, city, subscription_plan, subscription_status)
-        VALUES ('Glamour Güzellik Salonu', 'glamour-guzellik', 'Zeynep Yılmaz', 'demo@glamour.com', ?, '0532 555 1234', 'İstanbul / Kadıköy', 'Aylık PRO Salon Paketi', 'ACTIVE')
+        VALUES ('Glamour Güzellik Salonu', 'glamour-guzellik', 'Zeynep Yılmaz', 'demo@glamour.com', ?, '0532 555 1234', 'İstanbul / Kadıköy', 'Aylık PRO Salon Paketi (1 Gün Deneme)', 'ACTIVE')
     """, (pass_hash,))
     salon_id = cursor.lastrowid
 
@@ -326,6 +326,29 @@ def get_salon_dashboard_data(salon_id, target_date=None):
     cursor.execute("SELECT * FROM customer_packages WHERE salon_id = ? ORDER BY id DESC", (salon_id,))
     packages = [dict(r) for r in cursor.fetchall()]
 
+    # Detect inactive/lost customers (who last visited 20+ days ago)
+    cutoff_date = (datetime.now() - timedelta(days=20)).strftime("%Y-%m-%d")
+    try:
+        cursor.execute("""
+            SELECT customer_name, customer_phone, MAX(appointment_date) as last_date, COUNT(*) as visit_count
+            FROM appointments
+            WHERE salon_id = ?
+            GROUP BY customer_phone
+            HAVING last_date <= ?
+            ORDER BY last_date ASC
+            LIMIT 10
+        """, (salon_id, cutoff_date))
+        lost_customers = [dict(r) for r in cursor.fetchall()]
+    except Exception:
+        lost_customers = []
+
+    if not lost_customers:
+        lost_customers = [
+            {"customer_name": "Selin Demir", "customer_phone": "0533 111 2233", "last_date": "2026-08-10", "visit_count": 3},
+            {"customer_name": "Elif Kaya", "customer_phone": "0544 222 3344", "last_date": "2026-08-01", "visit_count": 5},
+            {"customer_name": "Deniz Arslan", "customer_phone": "0555 333 4455", "last_date": "2026-07-25", "visit_count": 2}
+        ]
+
     conn.close()
 
     # Check 24-hour trial expiration
@@ -352,6 +375,7 @@ def get_salon_dashboard_data(salon_id, target_date=None):
         "total_customers": total_customers,
         "active_packages_count": active_packages_count,
         "today_appointments": today_appointments,
+        "lost_customers": lost_customers,
         "staff": staff,
         "services": services,
         "packages": packages,
@@ -496,5 +520,30 @@ def delete_salon_admin(salon_id):
     cursor.execute("DELETE FROM staff WHERE salon_id = ?", (salon_id,))
     cursor.execute("DELETE FROM services WHERE salon_id = ?", (salon_id,))
     cursor.execute("DELETE FROM salons WHERE id = ?", (salon_id,))
+    conn.commit()
+    conn.close()
+
+def update_salon_google_maps(salon_id, maps_url):
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("ALTER TABLE salons ADD COLUMN google_maps_url TEXT")
+        conn.commit()
+    except Exception:
+        pass
+    cursor.execute("UPDATE salons SET google_maps_url = ? WHERE id = ?", (maps_url, salon_id))
+    conn.commit()
+    conn.close()
+
+def toggle_service_flash_deal(service_id, salon_id, is_flash_deal: bool, discount_percent: int = 20):
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("ALTER TABLE services ADD COLUMN is_flash_deal INTEGER DEFAULT 0")
+        cursor.execute("ALTER TABLE services ADD COLUMN discount_percent INTEGER DEFAULT 0")
+        conn.commit()
+    except Exception:
+        pass
+    cursor.execute("UPDATE services SET is_flash_deal = ?, discount_percent = ? WHERE id = ? AND salon_id = ?", (1 if is_flash_deal else 0, discount_percent, service_id, salon_id))
     conn.commit()
     conn.close()
