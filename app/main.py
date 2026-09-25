@@ -180,12 +180,12 @@ async def logout():
     return response
 
 @app.get("/dashboard", response_class=HTMLResponse)
-async def dashboard(request: Request):
+async def dashboard(request: Request, date: Optional[str] = None):
     salon_id = get_session_salon_id(request)
     if not salon_id:
         return RedirectResponse(url="/login", status_code=303)
         
-    data = get_salon_dashboard_data(salon_id=salon_id)
+    data = get_salon_dashboard_data(salon_id=salon_id, target_date=date)
     if not data:
         response = RedirectResponse(url="/login", status_code=303)
         response.delete_cookie(key="salon_session_id")
