@@ -98,6 +98,110 @@
             </script>
         </div>
 
+        <!-- KASA KAZANÇ MOTORLARI & MÜŞTERİ ÇEKME MERKEZİ -->
+        <div class="bg-gradient-to-br from-purple-900/50 via-slate-900 to-pink-900/50 border-2 border-pink-500/60 rounded-3xl p-6 shadow-2xl mb-8 space-y-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-white text-2xl font-black shadow-lg">
+                        <i class="fa-solid fa-rocket"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-lg font-black text-white">Kasa Kazanç Motorları & Müşteri Çekme Merkezi</h3>
+                            <span class="bg-pink-500/20 text-pink-400 border border-pink-500/30 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase">Kasa Doldurucu 💰</span>
+                        </div>
+                        <p class="text-xs text-slate-300">Gelmeyen müşterilerinizi geri çağırın, boş saatlerinize fırsat tanımlayın ve Google'da 1. sıraya çıkın!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3 KAZANÇ MOTORU GRID -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <!-- MOTOR 1: KAYIP MÜŞTERİ GERİ ÇAĞIRMA (WIN-BACK) -->
+                <div class="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 flex flex-col justify-between shadow-md space-y-4">
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-black text-pink-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-user-clock text-base"></i> Kayıp Müşteri Çağırma
+                            </span>
+                            <span class="bg-pink-500/20 text-pink-300 text-[10px] font-bold px-2 py-0.5 rounded-md">20+ Gündür Gelmeyenler</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mb-3">Sistemin otomatik tespit ettiği 20+ gündür gelmeyen müşterilerinize tek tıkla özel WhatsApp indirimi yollayın.</p>
+
+                        <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                            {% for lc in lost_customers %}
+                            <div class="p-2.5 bg-slate-900 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+                                <div>
+                                    <div class="font-bold text-white text-[11px]">{{ lc.customer_name }}</div>
+                                    <div class="text-[10px] text-slate-400">Son: {{ lc.last_date }}</div>
+                                </div>
+                                <button onclick="sendWinBackWa('{{ lc.customer_name }}', '{{ lc.customer_phone }}')" class="px-2.5 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 font-extrabold rounded-lg text-[10px] transition border border-emerald-500/30 flex items-center gap-1">
+                                    <i class="fa-brands fa-whatsapp text-xs"></i> Çağır
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MOTOR 2: GOOGLE HARİTALAR 5 YILDIZ YORUM MOTORU -->
+                <div class="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 flex flex-col justify-between shadow-md space-y-4">
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-black text-amber-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-star text-base"></i> Google 5 Yıldız Motoru
+                            </span>
+                            <span class="bg-amber-500/20 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-md">Müşteri Mıknatısı</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mb-3">Harita linkinizi girin. Memnun kalan müşterilerinize tek tıkla 5 yıldız daveti yollayın, bölgede 1. sıraya çıkın!</p>
+
+                        <div class="space-y-3 text-xs">
+                            <div>
+                                <label class="block font-bold text-slate-300 mb-1 text-[11px]">Google Harita Yorum Linkiniz</label>
+                                <input type="url" id="google-maps-input" value="{{ salon.google_maps_url or '' }}" placeholder="https://maps.app.goo.gl/..." class="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs outline-none focus:border-amber-500 font-mono">
+                            </div>
+                            <button onclick="saveGoogleMapsUrl()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold rounded-xl text-xs transition border border-slate-700">
+                                <i class="fa-solid fa-floppy-disk mr-1"></i> Linki Kaydet
+                            </button>
+                        </div>
+                    </div>
+
+                    <button onclick="sendGoogleReviewWa()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-slate-950 font-black text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-1.5">
+                        <i class="fa-brands fa-whatsapp text-sm"></i> Son Müşteriye 5 Yıldız Daveti At
+                    </button>
+                </div>
+
+                <!-- MOTOR 3: BOŞ KOLTUK FIRSAT SAATİ İNDİRİMİ -->
+                <div class="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 flex flex-col justify-between shadow-md space-y-4">
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-black text-purple-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-fire text-base"></i> Boş Koltuk Fırsat İndirimi
+                            </span>
+                            <span class="bg-purple-500/20 text-purple-300 text-[10px] font-bold px-2 py-0.5 rounded-md">Ölü Saatleri Doldur</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mb-3">Boş kalan koltuklarınızı paraya çevirmek için bir hizmetinize %20 Fırsat Etiketi tanıyın, linkinizde parıldasın!</p>
+
+                        <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                            {% for srv in services %}
+                            <div class="p-2.5 bg-slate-900 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+                                <div>
+                                    <div class="font-bold text-white text-[11px]">{{ srv.name }}</div>
+                                    <div class="text-[10px] text-emerald-400 font-extrabold">{{ "{:,.0f}".format(srv.price).replace(',', '.') }} ₺</div>
+                                </div>
+                                <button onclick="toggleFlashDeal({{ srv.id }}, {{ 0 if srv.is_flash_deal else 1 }})" class="px-2.5 py-1.5 {% if srv.is_flash_deal %}bg-pink-600 text-white font-black{% else %}bg-slate-800 text-slate-400 font-bold{% endif %} rounded-lg text-[10px] transition border border-slate-700 flex items-center gap-1">
+                                    <i class="fa-solid fa-bolt"></i> {% if srv.is_flash_deal %}Fırsat Aktif{% else %}Fırsat Yap{% endif %}
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
         <!-- DATE FILTER BAR (TAKVİM & TARİH FİLTRESİ) -->
         <div class="bg-gradient-to-r from-slate-800 via-slate-800 to-slate-900 border border-slate-700 rounded-2xl p-4 mb-8 flex flex-col md:flex-row justify-between items-center gap-4 shadow-xl">
             <div class="flex items-center gap-3">
@@ -211,7 +315,7 @@
                                 {% if not today_appointments %}
                                 <tr>
                                     <td colspan="7" class="py-8 text-center text-slate-500 text-xs">
-                                        Seçili tarih ({{ selected_date }}) için kayıtlı randevu bulunmuyor.
+                                        Henüz bugün için randevu bulunmuyor. Randevu eklemek için sağ üstteki butona basabilirsiniz.
                                     </td>
                                 </tr>
                                 {% endif %}
@@ -619,6 +723,88 @@
             var msg = `Merhaba ${customerName}, ${salonName} salonumuzdan bugün saat ${time} için oluşturduğunuz ${serviceName} randevunuzu hatırlatmak isteriz. Sizi bekliyoruz! 😊`;
             var waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
             window.open(waUrl, '_blank');
+        }
+
+        function sendWinBackWa(customerName, customerPhone) {
+            var phone = customerPhone.replace(/\D/g, '');
+            if (!phone.startsWith('90')) {
+                if (phone.startsWith('0')) {
+                    phone = '90' + phone.substring(1);
+                } else {
+                    phone = '90' + phone;
+                }
+            }
+            var salonName = "{{ salon.name }}";
+            var msg = `Merhaba ${customerName}, ${salonName} salonumuzda sizi çok özledik! ✨ Size özel tanımladığımız %20 indirimli fırsat randevunuzu oluşturmak için linkimiz: ${window.location.origin}/b/{{ salon.slug }}`;
+            var waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+            window.open(waUrl, '_blank');
+        }
+
+        async function saveGoogleMapsUrl() {
+            var mapsUrl = document.getElementById('google-maps-input').value.trim();
+            if (!mapsUrl) {
+                alert("Lütfen geçerli bir Google Harita linki girin.");
+                return;
+            }
+            const res = await fetch('/api/salon/update-google-maps', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ google_maps_url: mapsUrl })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                alert("Google Haritalar linkiniz başarıyla kaydedildi! ✨");
+            } else {
+                alert("Kaydedilirken bir hata oluştu.");
+            }
+        }
+
+        function sendGoogleReviewWa() {
+            var mapsUrl = document.getElementById('google-maps-input').value.trim();
+            if (!mapsUrl) {
+                alert("Lütfen önce Google Haritalar linkinizi kaydedin!");
+                return;
+            }
+            {% if today_appointments %}
+            var lastApp = {{ today_appointments[0] | tojson }};
+            var customerName = lastApp.customer_name;
+            var customerPhone = lastApp.customer_phone;
+            {% else %}
+            var customerName = "Değerli Müşterimiz";
+            var customerPhone = "";
+            {% endif %}
+            
+            var phone = customerPhone.replace(/\D/g, '');
+            if (phone && !phone.startsWith('90')) {
+                if (phone.startsWith('0')) {
+                    phone = '90' + phone.substring(1);
+                } else {
+                    phone = '90' + phone;
+                }
+            }
+            var salonName = "{{ salon.name }}";
+            var msg = `Merhaba ${customerName}, ${salonName} salonumuzda aldığınız hizmetten memnun kaldığınızı umuyoruz! ⭐⭐⭐⭐⭐ Bize Google'da 5 yıldızlı bir yorum bırakarak destek olmak ister misiniz? Harita linkimiz: ${mapsUrl}`;
+            
+            if (phone) {
+                var waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+            } else {
+                var waUrl = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+            }
+            window.open(waUrl, '_blank');
+        }
+
+        async function toggleFlashDeal(serviceId, isFlashDeal) {
+            const res = await fetch('/api/service/flash-deal', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ service_id: serviceId, is_flash_deal: Boolean(isFlashDeal), discount_percent: 20 })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                location.reload();
+            } else {
+                alert("İşlem sırasında hata oluştu.");
+            }
         }
 
         async function deleteAppointment(appointmentId) {
