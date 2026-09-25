@@ -150,7 +150,9 @@
                             <td class="py-4 px-3">
                                 <div class="font-mono text-slate-300 text-[11px]">{{ s.created_at or 'Önceki Kayıt' }}</div>
                                 {% if 'Deneme' in s.subscription_plan %}
-                                <div class="text-[10px] text-amber-400 font-bold mt-0.5"><i class="fa-solid fa-clock"></i> {{ s.hours_left }} Saat Deneme Kaldı</div>
+                                <div class="text-[10px] text-amber-400 font-bold mt-0.5"><i class="fa-solid fa-clock"></i> {{ s.days_left }} Gün {{ s.hours_left }} Saat Kaldı</div>
+                                {% else %}
+                                <div class="text-[10px] text-emerald-400 font-bold mt-0.5"><i class="fa-solid fa-shield"></i> Süresiz / Kalıcı</div>
                                 {% endif %}
                             </td>
                             <td class="py-4 px-3">
@@ -164,7 +166,7 @@
                                 <div class="font-extrabold text-slate-200 mb-1">{{ s.subscription_plan }}</div>
                                 {% if s.is_expired %}
                                 <span class="bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] font-extrabold px-2 py-0.5 rounded-md flex items-center gap-1 w-fit">
-                                    <i class="fa-solid fa-lock"></i> 24 Saat Doldu (Kilitli)
+                                    <i class="fa-solid fa-lock"></i> 3 Gün Doldu (Kilitli)
                                 </span>
                                 {% else %}
                                 <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-extrabold px-2 py-0.5 rounded-md flex items-center gap-1 w-fit">
@@ -241,7 +243,7 @@
 
         async function deleteSalon(salonId, salonName) {
             if (confirm(`"${salonName}" salonunu ve tüm verilerini sistemden kalıcı olarak silmek istediğinize emin misiniz?`)) {
-                const res = await fetch(`/api/admin/delete-salon`, {
+                const res = await fetch('/api/admin/delete-salon', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ salon_id: salonId })
