@@ -138,7 +138,7 @@ def seed_demo_salon(cursor):
     pass_hash = hash_password("123456")
     cursor.execute("""
         INSERT INTO salons (name, slug, owner_name, email, password_hash, phone, city, subscription_plan, subscription_status)
-        VALUES ('Glamour Güzellik Salonu', 'glamour-guzellik', 'Zeynep Yılmaz', 'demo@glamour.com', ?, '0532 555 1234', 'İstanbul / Kadıköy', 'Aylık PRO Salon Paketi (1 Gün Deneme)', 'ACTIVE')
+        VALUES ('Glamour Güzellik Salonu', 'glamour-guzellik', 'Zeynep Yılmaz', 'demo@glamour.com', ?, '0532 555 1234', 'İstanbul / Kadıköy', 'Aylık PRO Salon Paketi', 'ACTIVE')
     """, (pass_hash,))
     salon_id = cursor.lastrowid
 
@@ -280,11 +280,21 @@ def verify_and_reset_password(email, code, new_password):
     conn.close()
     return True
 
-def get_salon_dashboard_data(salon_id):
+def get_salon_dashboard_data(salon_id, target_date=None):
     conn = get_db()
     cursor = conn.cursor()
     
     today_str = datetime.now().strftime("%Y-%m-%d")
+    selected_date = target_date if target_date else today_str
+
+    try:
+        dt = datetime.strptime(selected_date, "%Y-%m-%d")
+    except Exception:
+        dt = datetime.now()
+        selected_date = today_str
+
+    yesterday_date = (dt - timedelta(days=1)).strftime("%Y-%m-%d")
+    tomorrow_date = (dt + timedelta(days=1)).strftime("%Y-%m-%d")
     
     cursor.execute("SELECT * FROM salons WHERE id = ?", (salon_id,))
     salon_row = cursor.fetchone()
@@ -293,7 +303,7 @@ def get_salon_dashboard_data(salon_id):
         return None
     salon = dict(salon_row)
     
-    cursor.execute("SELECT COUNT(*), COALESCE(SUM(price), 0) FROM appointments WHERE salon_id = ? AND appointment_date = ?", (salon_id, today_str))
+    cursor.execute("SELECT COUNT(*), COALESCE(SUM(price), 0) FROM appointments WHERE salon_id = ? AND appointment_date = ?", (salon_id, selected_date))
     row = cursor.fetchone()
     today_count = row[0]
     today_revenue = row[1]
@@ -304,7 +314,7 @@ def get_salon_dashboard_data(salon_id):
     cursor.execute("SELECT COUNT(*) FROM customer_packages WHERE salon_id = ? AND completed_sessions < total_sessions", (salon_id,))
     active_packages_count = cursor.fetchone()[0]
     
-    cursor.execute("SELECT * FROM appointments WHERE salon_id = ? AND appointment_date = ? ORDER BY appointment_time ASC", (salon_id, today_str))
+    cursor.execute("SELECT * FROM appointments WHERE salon_id = ? AND appointment_date = ? ORDER BY appointment_time ASC", (salon_id, selected_date))
     today_appointments = [dict(r) for r in cursor.fetchall()]
 
     cursor.execute("SELECT * FROM staff WHERE salon_id = ?", (salon_id,))
@@ -333,6 +343,10 @@ def get_salon_dashboard_data(salon_id):
             pass
     
     return {
+        "selected_date": selected_date,
+        "yesterday_date": yesterday_date,
+        "tomorrow_date": tomorrow_date,
+        "today_date": today_str,
         "today_count": today_count,
         "today_revenue": today_revenue,
         "total_customers": total_customers,
@@ -461,12 +475,16 @@ def update_salon_subscription(salon_id, new_plan):
     except Exception:
         pass
 
-    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    if 'Deneme' in new_plan:
+        created_at_val = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    else:
+        created_at_val = '2099-01-01 00:00:00'
+
     cursor.execute("""
         UPDATE salons 
         SET subscription_plan = ?, subscription_status = 'ACTIVE', created_at = ? 
         WHERE id = ?
-    """, (new_plan, now_str, salon_id))
+    """, (new_plan, created_at_val, salon_id))
     conn.commit()
     conn.close()
 
