@@ -37,6 +37,12 @@ class DBConnection:
     def commit(self):
         self.conn.commit()
 
+    def rollback(self):
+        try:
+            self.conn.rollback()
+        except Exception:
+            pass
+
     def close(self):
         self.conn.close()
 
@@ -64,6 +70,10 @@ class DBCursor:
                         self.lastrowid = res[0]
                     return
                 except Exception:
+                    try:
+                        self.conn.rollback()
+                    except Exception:
+                        pass
                     self.raw_cursor.execute(query_pg, params)
                     return
 
@@ -108,7 +118,7 @@ class DBCursor:
         res = []
         for r in rows:
             d = dict(r)
-            res.append(DictRow(d, tuple(r.values())))
+            res.append(DictRow(d, tuple(d.values())))
         return res
 
 def get_db():
@@ -147,6 +157,7 @@ def init_db():
             city TEXT NOT NULL,
             subscription_plan TEXT DEFAULT 'Aylık PRO Salon Paketi',
             subscription_status TEXT DEFAULT 'ACTIVE',
+            google_maps_url TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
@@ -181,7 +192,9 @@ def init_db():
             name TEXT NOT NULL,
             duration_minutes INTEGER DEFAULT 45,
             price REAL NOT NULL,
-            category TEXT NOT NULL
+            category TEXT NOT NULL,
+            is_flash_deal INTEGER DEFAULT 0,
+            discount_percent INTEGER DEFAULT 0
         )
     """)
 
@@ -226,7 +239,7 @@ def init_db():
         cursor.execute("ALTER TABLE salons ADD COLUMN created_at TEXT")
         conn.commit()
     except Exception:
-        pass
+        conn.rollback()
     
     # Seed default demo salon if empty
     cursor.execute("SELECT count(*) FROM salons")
@@ -442,6 +455,7 @@ def get_salon_dashboard_data(salon_id, target_date=None):
         """, (salon_id, cutoff_date))
         lost_customers = [dict(r) for r in cursor.fetchall()]
     except Exception:
+        conn.rollback()
         lost_customers = []
 
     if not lost_customers:
@@ -627,8 +641,9 @@ def update_salon_subscription(salon_id, new_plan):
     # Safely ensure created_at column exists if older DB schema
     try:
         cursor.execute("ALTER TABLE salons ADD COLUMN created_at TEXT")
+        conn.commit()
     except Exception:
-        pass
+        conn.rollback()
 
     if 'Deneme' in new_plan:
         created_at_val = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -661,7 +676,7 @@ def update_salon_google_maps(salon_id, maps_url):
         cursor.execute("ALTER TABLE salons ADD COLUMN google_maps_url TEXT")
         conn.commit()
     except Exception:
-        pass
+        conn.rollback()
     cursor.execute("UPDATE salons SET google_maps_url = ? WHERE id = ?", (maps_url, salon_id))
     conn.commit()
     conn.close()
@@ -671,10 +686,16 @@ def toggle_service_flash_deal(service_id, salon_id, is_flash_deal: bool, discoun
     cursor = conn.cursor()
     try:
         cursor.execute("ALTER TABLE services ADD COLUMN is_flash_deal INTEGER DEFAULT 0")
+        conn.commit()
+    except Exception:
+        conn.rollback()
+
+    try:
         cursor.execute("ALTER TABLE services ADD COLUMN discount_percent INTEGER DEFAULT 0")
         conn.commit()
     except Exception:
-        pass
+        conn.rollback()
+
     cursor.execute("UPDATE services SET is_flash_deal = ?, discount_percent = ? WHERE id = ? AND salon_id = ?", (1 if is_flash_deal else 0, discount_percent, service_id, salon_id))
     conn.commit()
     conn.close()
