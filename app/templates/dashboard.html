@@ -135,7 +135,7 @@
                 </div>
             </div>
 
-            <!-- 5 KAZANÇ MOTORU GRID (RESPONSIVE 3-COLUMNS WITH RICH SPACING) -->
+            <!-- 5 KAZANÇ MOTORU GRID -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 
                 <!-- MOTOR 1: KAYIP MÜŞTERİ GERİ ÇAĞIRMA (WIN-BACK) -->
@@ -288,4 +288,807 @@
                     <i class="fa-solid fa-calendar-days"></i>
                 </div>
                 <div>
-                    <h4 class="text-sm font-black text-
+                    <h4 class="text-sm font-black text-white flex items-center gap-2">
+                        Tarih Filtresi & Ciro Raporu
+                        {% if selected_date == today_date %}
+                        <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-md">Bugün</span>
+                        {% else %}
+                        <span class="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-md">{{ selected_date }}</span>
+                        {% endif %}
+                    </h4>
+                    <p class="text-xs text-slate-400">Dünün, bugünün veya istediğiniz herhangi bir tarihteki ciro ve randevuları görün</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 flex-wrap w-full md:w-auto">
+                <a href="/dashboard?date={{ yesterday_date }}" class="px-3 py-2 bg-slate-950 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs border border-slate-700 transition flex items-center gap-1">
+                    <i class="fa-solid fa-chevron-left text-[10px]"></i> Dün
+                </a>
+                <a href="/dashboard?date={{ today_date }}" class="px-3.5 py-2 {% if selected_date == today_date %}bg-gradient-to-r from-pink-500 to-purple-600 text-white font-black shadow-md{% else %}bg-slate-950 text-slate-300 font-bold{% endif %} rounded-xl text-xs border border-slate-700 transition">
+                    Bugün
+                </a>
+                <a href="/dashboard?date={{ tomorrow_date }}" class="px-3 py-2 bg-slate-950 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs border border-slate-700 transition flex items-center gap-1">
+                    Yarın <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                </a>
+                <div class="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-700">
+                    <i class="fa-solid fa-calendar-check text-pink-400 text-xs"></i>
+                    <input type="date" value="{{ selected_date }}" onchange="window.location.href='/dashboard?date=' + this.value" class="bg-transparent text-xs font-mono font-bold text-white outline-none cursor-pointer">
+                </div>
+            </div>
+        </div>
+
+        <!-- STATS / KPI CARDS -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/80 shadow-md">
+                <div class="flex justify-between items-start mb-2">
+                    <p class="text-xs font-bold text-slate-400">{% if selected_date == today_date %}Bugünkü{% else %}{{ selected_date }}{% endif %} Randevular</p>
+                    <span class="w-8 h-8 rounded-lg bg-pink-500/20 text-pink-400 flex items-center justify-center text-sm font-bold"><i class="fa-solid fa-calendar-check"></i></span>
+                </div>
+                <h3 class="text-2xl font-black text-white">{{ today_count }} Randevu</h3>
+                <p class="text-[11px] text-emerald-400 mt-1"><i class="fa-solid fa-arrow-trend-up"></i> Tümü Onaylandı</p>
+            </div>
+
+            <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/80 shadow-md">
+                <div class="flex justify-between items-start mb-2">
+                    <p class="text-xs font-bold text-slate-400">{% if selected_date == today_date %}Tahmini Bugünkü{% else %}{{ selected_date }}{% endif %} Ciro</p>
+                    <span class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm font-bold"><i class="fa-solid fa-turkish-lira-sign"></i></span>
+                </div>
+                <h3 class="text-2xl font-black text-emerald-400">{{ "{:,.0f}".format(today_revenue).replace(',', '.') }} ₺</h3>
+                <p class="text-[11px] text-slate-400 mt-1">Gününde beklenen toplam hizmet</p>
+            </div>
+
+            <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/80 shadow-md">
+                <div class="flex justify-between items-start mb-2">
+                    <p class="text-xs font-bold text-slate-400">Aktif Seans Paketleri</p>
+                    <span class="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center text-sm font-bold"><i class="fa-solid fa-cubes"></i></span>
+                </div>
+                <h3 class="text-2xl font-black text-white">{{ active_packages_count }} Paket Takipte</h3>
+                <p class="text-[11px] text-purple-300 mt-1">Devam eden epilasyon & bakım</p>
+            </div>
+
+            <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/80 shadow-md">
+                <div class="flex justify-between items-start mb-2">
+                    <p class="text-xs font-bold text-slate-400">Kayıtlı Müşteri Sayısı</p>
+                    <span class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center text-sm font-bold"><i class="fa-solid fa-users"></i></span>
+                </div>
+                <h3 class="text-2xl font-black text-white">{{ total_customers }} Müşteri</h3>
+                <p class="text-[11px] text-blue-400 mt-1">Veritabanında kayıtlı portföy</p>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT TABS (TODAY'S APPOINTMENTS & PACKAGES) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- LEFT 2 COLS: TODAY'S APPOINTMENT TABLE & ACTION BUTTONS -->
+            <div class="lg:col-span-2 space-y-8">
+                
+                <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-6 shadow-xl">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 class="text-lg font-black text-white flex items-center gap-2">
+                                <i class="fa-solid fa-calendar-day text-pink-500"></i> {% if selected_date == today_date %}Bugünkü{% else %}{{ selected_date }} Tarihli{% endif %} Randevu Akışı
+                            </h3>
+                            <p class="text-xs text-slate-400">Seçili günün tüm saatlik randevuları ve WhatsApp onay durumları</p>
+                        </div>
+
+                        <button onclick="openNewAppointmentModal()" class="px-4 py-2 bg-pink-600 hover:bg-pink-500 text-white font-extrabold rounded-xl text-xs transition shadow-md flex items-center gap-1.5">
+                            <i class="fa-solid fa-plus"></i> Yeni Randevu Ekle
+                        </button>
+                    </div>
+
+                    <!-- Appointments Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="text-slate-400 border-b border-slate-700/80 pb-2">
+                                    <th class="py-3 px-3">Saat</th>
+                                    <th class="py-3 px-3">Müşteri</th>
+                                    <th class="py-3 px-3">Hizmet</th>
+                                    <th class="py-3 px-3">Uzman</th>
+                                    <th class="py-3 px-3">Tutar</th>
+                                    <th class="py-3 px-3">Durum</th>
+                                    <th class="py-3 px-3 text-right">İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-700/50">
+                                {% if not today_appointments %}
+                                <tr>
+                                    <td colspan="7" class="py-8 text-center text-slate-500 text-xs">
+                                        Henüz bugün için randevu bulunmuyor. Randevu eklemek için sağ üstteki butona basabilirsiniz.
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% for app in today_appointments %}
+                                <tr class="hover:bg-slate-700/30 transition">
+                                    <td class="py-3.5 px-3 font-black text-pink-400">{{ app.appointment_time }}</td>
+                                    <td class="py-3.5 px-3">
+                                        <div class="font-bold text-white">{{ app.customer_name }}</div>
+                                        <div class="text-[10px] text-slate-400">{{ app.customer_phone }}</div>
+                                    </td>
+                                    <td class="py-3.5 px-3 font-semibold text-slate-200">{{ app.service_name }}</td>
+                                    <td class="py-3.5 px-3">
+                                        <span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-slate-700 text-slate-200">
+                                            {{ app.staff_name }}
+                                        </span>
+                                    </td>
+                                    <td class="py-3.5 px-3 font-black text-emerald-400">{{ "{:,.0f}".format(app.price).replace(',', '.') }} ₺</td>
+                                    <td class="py-3.5 px-3">
+                                        {% if app.wa_sent %}
+                                        <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-extrabold px-2 py-0.5 rounded-md flex items-center gap-1 w-fit">
+                                            <i class="fa-brands fa-whatsapp"></i> Onaylı
+                                        </span>
+                                        {% else %}
+                                        <span class="bg-slate-700 text-slate-400 text-[10px] font-bold px-2 py-0.5 rounded-md">Bekliyor</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3.5 px-3 text-right">
+                                        <div class="flex items-center justify-end gap-1.5">
+                                            <button onclick="sendWaReminder('{{ app.customer_name }}', '{{ app.customer_phone }}', '{{ app.appointment_time }}', '{{ app.service_name }}')" title="WhatsApp Hatırlatması Gönder" class="p-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 font-bold rounded-lg transition flex items-center gap-1 text-xs">
+                                                <i class="fa-brands fa-whatsapp text-sm"></i>
+                                            </button>
+                                            <button onclick="deleteAppointment({{ app.id }})" title="Randevuyu Sil" class="p-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-bold rounded-lg transition flex items-center gap-1 text-xs">
+                                                <i class="fa-solid fa-trash text-sm"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- SEANS & PAKET TAKİP TABLOSU -->
+                <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-6 shadow-xl">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 class="text-lg font-black text-white flex items-center gap-2">
+                                <i class="fa-solid fa-cubes text-purple-400"></i> Müşteri Seans & Paket Takibi
+                            </h3>
+                            <p class="text-xs text-slate-400">Epilasyon ve medikal cilt bakım paket seans hakları</p>
+                        </div>
+
+                        <button onclick="openNewPackageModal()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-extrabold rounded-xl text-xs transition shadow-md flex items-center gap-1.5">
+                            <i class="fa-solid fa-plus"></i> Yeni Paket Tanımla
+                        </button>
+                    </div>
+
+                    <div class="space-y-4">
+                        {% if not packages %}
+                        <p class="text-center text-slate-500 text-xs py-4">Henüz seans paketi tanımlanmadı.</p>
+                        {% endif %}
+                        {% for pkg in packages %}
+                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="font-bold text-white text-sm">{{ pkg.customer_name }}</h4>
+                                    <span class="text-[10px] text-slate-400">({{ pkg.customer_phone }})</span>
+                                </div>
+                                <p class="text-xs text-purple-300 font-semibold mt-0.5">{{ pkg.package_name }}</p>
+                            </div>
+
+                            <!-- Progress Bar -->
+                            <div class="w-full md:w-64">
+                                <div class="flex justify-between text-xs font-extrabold mb-1">
+                                    <span class="text-slate-400">Tamamlanan Seans</span>
+                                    <span class="text-pink-400">{{ pkg.completed_sessions }} / {{ pkg.total_sessions }} Seans</span>
+                                </div>
+                                <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden border border-slate-700">
+                                    {% set percent = (pkg.completed_sessions / pkg.total_sessions * 100) %}
+                                    <div class="bg-gradient-to-r from-pink-500 to-purple-600 h-full rounded-full transition-all" style="width: {{ percent }}%;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Action -->
+                            <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 pt-2 md:pt-0 border-slate-800">
+                                <div class="text-right">
+                                    <span class="text-[10px] text-slate-400 block">Paket Tutarı</span>
+                                    <span class="text-sm font-black text-emerald-400">{{ "{:,.0f}".format(pkg.total_price).replace(',', '.') }} ₺</span>
+                                </div>
+
+                                <div class="flex items-center gap-1.5">
+                                    <button onclick="useSession({{ pkg.id }})" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-pink-400 font-extrabold text-xs rounded-xl border border-pink-500/30 transition flex items-center gap-1">
+                                        <i class="fa-solid fa-check"></i> 1 Seans Düş
+                                    </button>
+                                    <button onclick="deletePackage({{ pkg.id }}, '{{ pkg.customer_name }}')" title="Paket Takibini Sil" class="p-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-bold rounded-xl border border-red-500/30 transition flex items-center gap-1 text-xs">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLS: STAFF & SERVICES MANAGEMENT -->
+            <div class="space-y-6">
+                
+                <!-- Staff Members List -->
+                <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-6 shadow-xl">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-base font-black text-white flex items-center gap-2">
+                            <i class="fa-solid fa-user-tie text-blue-400"></i> Ekip & Uzmanlar
+                        </h3>
+                        <button onclick="openNewStaffModal()" class="text-xs font-bold text-pink-400 hover:underline">+ Uzman Ekle</button>
+                    </div>
+
+                    <div class="space-y-3">
+                        {% for st in staff %}
+                        <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-700/60 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black shadow-inner" style="background-color: {{ st.color }};">
+                                    {{ st.name[0] }}
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-white text-xs">{{ st.name }}</h4>
+                                    <p class="text-[10px] text-slate-400">{{ st.title }}</p>
+                                </div>
+                            </div>
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-emerald-500/50 shadow-md"></span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Active Salon Services list -->
+                <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-6 shadow-xl">
+                    <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
+                        <div>
+                            <h3 class="text-base font-black text-white flex items-center gap-2">
+                                <i class="fa-solid fa-spa text-pink-400"></i> Verilen Hizmetler & Fiyatlar
+                            </h3>
+                            <p class="text-[11px] text-slate-400">Müşterilerinizin randevu alırken göreceği hizmet ve fiyat listesi</p>
+                        </div>
+                        <button onclick="openNewServiceModal()" class="px-3.5 py-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-extrabold text-xs rounded-xl shadow-md transition transform active:scale-95 flex items-center gap-1.5 border border-pink-400/30">
+                            <i class="fa-solid fa-circle-plus text-sm"></i> + Yeni Hizmet Ekle
+                        </button>
+                    </div>
+
+                    <div class="space-y-2.5">
+                        {% for srv in services %}
+                        <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-700/60 flex justify-between items-center text-xs">
+                            <div>
+                                <h4 class="font-bold text-slate-200">{{ srv.name }}</h4>
+                                <span class="text-[10px] text-slate-400">{{ srv.duration_minutes }} Dakika</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-black text-emerald-400">{{ "{:,.0f}".format(srv.price).replace(',', '.') }} ₺</span>
+                                <button onclick="editService({{ srv.id }}, '{{ srv.name }}', {{ srv.duration_minutes }}, {{ srv.price }})" title="Fiyatı / Hizmeti Düzenle" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-lg border border-slate-700 transition">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button onclick="deleteService({{ srv.id }}, '{{ srv.name }}')" title="Hizmeti Sil" class="p-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-bold rounded-lg border border-red-500/30 transition">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-6 border border-dashed border-slate-700 rounded-xl">
+                            <p class="text-xs text-slate-400 font-medium mb-3">Henüz salonunuza özel bir hizmet eklenmedi.</p>
+                            <button onclick="openNewServiceModal()" class="px-4 py-2 bg-pink-500/20 hover:bg-pink-500/30 text-pink-300 border border-pink-500/40 rounded-xl text-xs font-bold transition inline-flex items-center gap-1.5">
+                                <i class="fa-solid fa-plus"></i> İlk Hizmetinizi Ekle
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- NEW APPOINTMENT MODAL -->
+    <div id="new-app-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 hidden p-4">
+        <div class="bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-700 relative text-white">
+            <button onclick="closeNewAppointmentModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            
+            <h3 class="text-lg font-black mb-4 flex items-center gap-2 text-pink-400">
+                <i class="fa-solid fa-calendar-plus"></i> Yeni Randevu Oluştur
+            </h3>
+
+            <form onsubmit="submitNewAppointment(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">Müşteri Ad Soyad</label>
+                    <input type="text" id="modal-app-name" required placeholder="Örn. Zeynep Yılmaz" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-pink-500">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">WhatsApp Telefon</label>
+                    <input type="text" id="modal-app-phone" required placeholder="0532 000 0000" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-pink-500">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">Hizmet Seçin</label>
+                    <select id="modal-app-service" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-pink-500 font-semibold">
+                        {% for srv in services %}
+                        <option value="{{ srv.name }}" data-price="{{ srv.price }}">{{ srv.name }} ({{ "{:,.0f}".format(srv.price).replace(',', '.') }} ₺)</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">Uzman Seçin</label>
+                    <select id="modal-app-staff" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-pink-500 font-semibold">
+                        {% for st in staff %}
+                        <option value="{{ st.name }}">{{ st.name }} ({{ st.title }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-300 mb-1">Tarih</label>
+                        <input type="date" id="modal-app-date" required class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-pink-500 font-semibold">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-300 mb-1">Saat</label>
+                        <select id="modal-app-time" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-pink-500 font-semibold">
+                            <option value="09:00">09:00</option>
+                            <option value="09:30">09:30</option>
+                            <option value="10:00">10:00</option>
+                            <option value="10:30">10:30</option>
+                            <option value="11:00">11:00</option>
+                            <option value="11:30">11:30</option>
+                            <option value="12:00">12:00</option>
+                            <option value="12:30">12:30</option>
+                            <option value="13:00">13:00</option>
+                            <option value="13:30">13:30</option>
+                            <option value="14:00">14:00</option>
+                            <option value="14:30">14:30</option>
+                            <option value="15:00">15:00</option>
+                            <option value="15:30">15:30</option>
+                            <option value="16:00">16:00</option>
+                            <option value="16:30">16:30</option>
+                            <option value="17:00">17:00</option>
+                            <option value="17:30">17:30</option>
+                            <option value="18:00">18:00</option>
+                            <option value="18:30">18:30</option>
+                            <option value="19:00">19:00</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="pt-3">
+                    <button type="submit" class="w-full py-2.5 bg-pink-600 hover:bg-pink-500 text-white font-extrabold rounded-xl transition shadow-md">
+                        Randevuyu Kaydet & WhatsApp Onayı Gönder
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- NEW PACKAGE MODAL -->
+    <div id="new-pkg-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 hidden p-4">
+        <div class="bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-700 relative text-white">
+            <button onclick="closeNewPackageModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            
+            <h3 class="text-lg font-black mb-4 flex items-center gap-2 text-purple-400">
+                <i class="fa-solid fa-cubes"></i> Yeni Müşteri Seans Paketi Tanımla
+            </h3>
+
+            <form onsubmit="submitNewPackage(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">Müşteri Ad Soyad</label>
+                    <input type="text" id="pkg-customer-name" required placeholder="Örn. Ayşe Yılmaz" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-purple-500">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">WhatsApp Telefon</label>
+                    <input type="text" id="pkg-customer-phone" required placeholder="0532 000 0000" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-purple-500">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">Paket Adı</label>
+                    <input type="text" id="pkg-name" required placeholder="Örn. 8 Seans Buz Lazer Paketi" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-purple-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-300 mb-1">Toplam Seans Hak Sayısı</label>
+                        <input type="number" id="pkg-sessions" value="8" required class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-purple-500 font-semibold">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-300 mb-1">Toplam Paket Fiyatı (TL)</label>
+                        <input type="number" id="pkg-price" value="8000" required class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-purple-500 font-semibold">
+                    </div>
+                </div>
+
+                <div class="pt-3">
+                    <button type="submit" class="w-full py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-extrabold rounded-xl transition shadow-md">
+                        Paketi Oluştur & Müşteriye Ekle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- NEW STAFF MODAL -->
+    <div id="new-staff-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 hidden p-4">
+        <div class="bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-700 relative text-white">
+            <button onclick="closeNewStaffModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            
+            <h3 class="text-lg font-black mb-4 flex items-center gap-2 text-blue-400">
+                <i class="fa-solid fa-user-plus"></i> Yeni Uzman / Personel Ekle
+            </h3>
+
+            <form onsubmit="submitNewStaff(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">Personel Ad Soyad</label>
+                    <input type="text" id="staff-name" required placeholder="Örn. Nisa Yılmaz" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">Unvan / Uzmanlık Alanı</label>
+                    <input type="text" id="staff-title" required placeholder="Örn. Cilt Uzmanı & Estetisyen" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-blue-500">
+                </div>
+                <div class="pt-3">
+                    <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-xl transition shadow-md">
+                        Uzmanı Kadroya Ekle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- NEW SERVICE MODAL -->
+    <div id="new-service-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 hidden p-4">
+        <div class="bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-700 relative text-white">
+            <button onclick="closeNewServiceModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            
+            <h3 class="text-lg font-black mb-4 flex items-center gap-2 text-pink-400">
+                <i class="fa-solid fa-spa"></i> Yeni Hizmet & Ücret Ekle
+            </h3>
+
+            <form onsubmit="submitNewService(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">Hizmet Adı</label>
+                    <input type="text" id="srv-name" required placeholder="Örn. Keratin Saç Bakımı" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-pink-500">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-300 mb-1">Süre (Dakika)</label>
+                        <input type="number" id="srv-duration" value="45" required class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-pink-500 font-semibold">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-300 mb-1">Ücret (TL)</label>
+                        <input type="number" id="srv-price" value="750" required class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-pink-500 font-semibold">
+                    </div>
+                </div>
+                <div class="pt-3">
+                    <button type="submit" class="w-full py-2.5 bg-pink-600 hover:bg-pink-500 text-white font-extrabold rounded-xl transition shadow-md">
+                        Hizmeti Listeye Ekle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        document.getElementById('modal-app-date').valueAsDate = new Date();
+
+        function openNewAppointmentModal() { document.getElementById('new-app-modal').classList.remove('hidden'); }
+        function closeNewAppointmentModal() { document.getElementById('new-app-modal').classList.add('hidden'); }
+
+        function openNewPackageModal() { document.getElementById('new-pkg-modal').classList.remove('hidden'); }
+        function closeNewPackageModal() { document.getElementById('new-pkg-modal').classList.add('hidden'); }
+
+        function openNewStaffModal() { document.getElementById('new-staff-modal').classList.remove('hidden'); }
+        function closeNewStaffModal() { document.getElementById('new-staff-modal').classList.add('hidden'); }
+
+        function openNewServiceModal() { document.getElementById('new-service-modal').classList.remove('hidden'); }
+        function closeNewServiceModal() { document.getElementById('new-service-modal').classList.add('hidden'); }
+
+        function sendWaReminder(customerName, customerPhone, time, serviceName) {
+            var phone = customerPhone.replace(/\D/g, '');
+            if (!phone.startsWith('90')) {
+                if (phone.startsWith('0')) {
+                    phone = '90' + phone.substring(1);
+                } else {
+                    phone = '90' + phone;
+                }
+            }
+            var salonName = "{{ salon.name }}";
+            var msg = `Merhaba ${customerName}, ${salonName} salonumuzdan bugün saat ${time} için oluşturduğunuz ${serviceName} randevunuzu hatırlatmak isteriz. Sizi bekliyoruz! 😊`;
+            var waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+            window.open(waUrl, '_blank');
+        }
+
+        function sendWinBackWa(customerName, customerPhone) {
+            var phone = customerPhone.replace(/\D/g, '');
+            if (!phone.startsWith('90')) {
+                if (phone.startsWith('0')) {
+                    phone = '90' + phone.substring(1);
+                } else {
+                    phone = '90' + phone;
+                }
+            }
+            var salonName = "{{ salon.name }}";
+            var msg = `Merhaba ${customerName}, ${salonName} salonumuzda sizi çok özledik! ✨ Size özel tanımladığımız %20 indirimli fırsat randevunuzu oluşturmak için linkimiz: ${window.location.origin}/b/{{ salon.slug }}`;
+            var waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+            window.open(waUrl, '_blank');
+        }
+
+        async function saveGoogleMapsUrl() {
+            var mapsUrl = document.getElementById('google-maps-input').value.trim();
+            if (!mapsUrl) {
+                alert("Lütfen geçerli bir Google Harita linki girin.");
+                return;
+            }
+            const res = await fetch('/api/salon/update-google-maps', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ google_maps_url: mapsUrl })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                alert("Google Haritalar linkiniz başarıyla kaydedildi! ✨");
+            } else {
+                alert("Kaydedilirken bir hata oluştu.");
+            }
+        }
+
+        function sendGoogleReviewWa() {
+            var mapsUrl = document.getElementById('google-maps-input').value.trim();
+            if (!mapsUrl) {
+                alert("Lütfen önce Google Haritalar linkinizi kaydedin!");
+                return;
+            }
+            {% if today_appointments %}
+            var lastApp = {{ today_appointments[0] | tojson }};
+            var customerName = lastApp.customer_name;
+            var customerPhone = lastApp.customer_phone;
+            {% else %}
+            var customerName = "Değerli Müşterimiz";
+            var customerPhone = "";
+            {% endif %}
+            
+            var phone = customerPhone.replace(/\D/g, '');
+            if (phone && !phone.startsWith('90')) {
+                if (phone.startsWith('0')) {
+                    phone = '90' + phone.substring(1);
+                } else {
+                    phone = '90' + phone;
+                }
+            }
+            var salonName = "{{ salon.name }}";
+            var msg = `Merhaba ${customerName}, ${salonName} salonumuzda aldığınız hizmetten memnun kaldığınızı umuyoruz! ⭐⭐⭐⭐⭐ Bize Google'da 5 yıldızlı bir yorum bırakarak destek olmak ister misiniz? Harita linkimiz: ${mapsUrl}`;
+            
+            if (phone) {
+                var waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+            } else {
+                var waUrl = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+            }
+            window.open(waUrl, '_blank');
+        }
+
+        async function toggleFlashDeal(serviceId, isFlashDeal) {
+            const res = await fetch('/api/service/flash-deal', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ service_id: serviceId, is_flash_deal: Boolean(isFlashDeal), discount_percent: 20 })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                location.reload();
+            } else {
+                alert("İşlem sırasında hata oluştu.");
+            }
+        }
+
+        function sendBirthdayWa(customerName, customerPhone) {
+            var phone = customerPhone.replace(/\D/g, '');
+            if (!phone.startsWith('90')) {
+                if (phone.startsWith('0')) {
+                    phone = '90' + phone.substring(1);
+                } else {
+                    phone = '90' + phone;
+                }
+            }
+            var salonName = "{{ salon.name }}";
+            var msg = `İyi ki doğdunuz ${customerName}! 🥳 ${salonName} ailemiz olarak yeni yaşınızı kutlarız! Doğum gününüze özel tüm fön, cilt bakımı ve işlemlerde %25 İndirim Hediyeniz tanımlandı. Randevunuzu hemen almak için linkimiz: ${window.location.origin}/b/{{ salon.slug }}`;
+            var waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+            window.open(waUrl, '_blank');
+        }
+
+        function sendReferralWa() {
+            var salonName = "{{ salon.name }}";
+            var msg = `Merhaba! 💖 ${salonName} salonumuzda %100 memnuniyet garantili hizmet aldınız! Arkadaşlarınıza özel tavsiye fırsatı: Bu linkten randevu alan ilk arkadaşınız 100 TL İndirim kazanır, siz de sonraki randevunuzda 100 TL hediye kazanırsınız! Randevu Linkimiz: ${window.location.origin}/b/{{ salon.slug }}`;
+            var waUrl = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+            window.open(waUrl, '_blank');
+        }
+
+        async function deleteAppointment(appointmentId) {
+            if (confirm("Bu randevuyu silmek istediğinize emin misiniz?")) {
+                const res = await fetch(`/api/appointment/delete/${appointmentId}`, { method: 'POST' });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    location.reload();
+                } else {
+                    alert("Randevu silinirken bir hata oluştu.");
+                }
+            }
+        }
+
+        async function deletePackage(packageId, customerName) {
+            if (confirm(`"${customerName}" isimli müşterinin bu paket takibini silmek istediğinize emin misiniz?`)) {
+                const res = await fetch(`/api/package/delete/${packageId}`, { method: 'POST' });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    location.reload();
+                } else {
+                    alert("Paket takibi silinirken bir hata oluştu.");
+                }
+            }
+        }
+
+        async function deleteService(serviceId, serviceName) {
+            if (confirm(`"${serviceName}" hizmetini listeden silmek istediğinize emin misiniz?`)) {
+                const res = await fetch(`/api/service/delete/${serviceId}`, { method: 'POST' });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    location.reload();
+                } else {
+                    alert("Hizmet silinirken bir hata oluştu.");
+                }
+            }
+        }
+
+        async function editService(serviceId, currentName, currentDuration, currentPrice) {
+            const newPriceStr = prompt(`"${currentName}" için yeni fiyatı giriniz (TL):`, currentPrice);
+            if (newPriceStr === null) return;
+            const newPrice = parseFloat(newPriceStr);
+            if (isNaN(newPrice)) {
+                alert("Geçersiz fiyat girdiniz.");
+                return;
+            }
+
+            const newName = prompt("Hizmet Adı:", currentName) || currentName;
+
+            const res = await fetch('/api/service/update', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    service_id: serviceId,
+                    name: newName,
+                    duration_minutes: currentDuration,
+                    price: newPrice
+                })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                alert("Hizmet başarıyla güncellendi!");
+                location.reload();
+            }
+        }
+
+        async function submitNewAppointment(e) {
+            e.preventDefault();
+            const serviceElem = document.getElementById('modal-app-service');
+            const selectedOpt = serviceElem.options[serviceElem.selectedIndex];
+            const price = parseFloat(selectedOpt.getAttribute('data-price')) || 1000;
+
+            const bodyData = {
+                customer_name: document.getElementById('modal-app-name').value,
+                customer_phone: document.getElementById('modal-app-phone').value,
+                service_name: serviceElem.value,
+                staff_name: document.getElementById('modal-app-staff').value,
+                appointment_date: document.getElementById('modal-app-date').value,
+                appointment_time: document.getElementById('modal-app-time').value,
+                price: price
+            };
+
+            const res = await fetch('/api/appointment/add', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(bodyData)
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                alert("Randevu başarıyla eklendi!");
+                location.reload();
+            }
+        }
+
+        async function submitNewPackage(e) {
+            e.preventDefault();
+            const bodyData = {
+                customer_name: document.getElementById('pkg-customer-name').value,
+                customer_phone: document.getElementById('pkg-customer-phone').value,
+                package_name: document.getElementById('pkg-name').value,
+                total_sessions: parseInt(document.getElementById('pkg-sessions').value),
+                total_price: parseFloat(document.getElementById('pkg-price').value),
+                paid_amount: parseFloat(document.getElementById('pkg-price').value)
+            };
+
+            const res = await fetch('/api/package/add', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(bodyData)
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                alert("Seans paketi başarıyla tanımlandı!");
+                location.reload();
+            }
+        }
+
+        async function submitNewStaff(e) {
+            e.preventDefault();
+            const bodyData = {
+                name: document.getElementById('staff-name').value,
+                title: document.getElementById('staff-title').value
+            };
+
+            const res = await fetch('/api/staff/add', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(bodyData)
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                alert("Yeni uzman kadroya eklendi!");
+                location.reload();
+            }
+        }
+
+        async function submitNewService(e) {
+            e.preventDefault();
+            const bodyData = {
+                name: document.getElementById('srv-name').value,
+                duration_minutes: parseInt(document.getElementById('srv-duration').value),
+                price: parseFloat(document.getElementById('srv-price').value)
+            };
+
+            const res = await fetch('/api/service/add', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(bodyData)
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                alert("Hizmet listeye eklendi!");
+                location.reload();
+            }
+        }
+
+        async function useSession(packageId) {
+            if (confirm("Bu müşterinin 1 seans hakkı düşülsün mü?")) {
+                const res = await fetch(`/api/package/use/${packageId}`, { method: 'POST' });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    location.reload();
+                }
+            }
+        }
+
+        {% if is_expired %}
+        <!-- 3 GÜNLÜK KİLİT EKRANI -->
+        <div class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div class="max-w-md w-full bg-slate-900 border-2 border-pink-500/80 rounded-3xl p-8 shadow-2xl text-center space-y-6">
+                <div class="w-20 h-20 rounded-3xl bg-pink-500/20 text-pink-400 border border-pink-500/30 flex items-center justify-center text-4xl mx-auto shadow-lg">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-black text-white">3 Günlük Ücretsiz PRO Deneme Süreniz Sona Ermiştir!</h2>
+                    <p class="text-xs text-slate-400 mt-2 font-medium">Salon yönetim panelinizi kesintisiz kullanmaya devam etmek için lütfen paketinizi WhatsApp üzerinden aktif edin.</p>
+                </div>
+                <a href="https://wa.me/905452772749?text=Merhaba%2C%20SalonGlow%203%20G%C3%BCnl%C3%BCk%20PRO%20Deneme%20s%C3%BCrem%20doldu.%20Paketimi%20aktif%20etmek%20istiyorum.%20%C4%B0%C5%9Fletme%20Ad%C4%B1m%3A%20{{ salon.name }}" target="_blank" class="w-full py-4 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-black text-sm rounded-2xl transition shadow-xl block">
+                    <i class="fa-brands fa-whatsapp text-lg mr-2"></i> WhatsApp İle Paketinizi Aktif Edin (05452772749)
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </script>
+</body>
+</html>
