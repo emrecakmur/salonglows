@@ -25,6 +25,8 @@ from app.database import (
     get_all_salons_admin,
     update_salon_subscription,
     delete_salon_admin,
+    update_salon_google_maps,
+    toggle_service_flash_deal,
     get_db
 )
 from app.email_service import send_password_reset_email
@@ -78,6 +80,14 @@ class UpdateServiceRequest(BaseModel):
     name: str
     duration_minutes: int
     price: float
+
+class UpdateGoogleMapsRequest(BaseModel):
+    google_maps_url: str
+
+class FlashDealRequest(BaseModel):
+    service_id: int
+    is_flash_deal: bool
+    discount_percent: int = 20
 
 class AdminSubscriptionUpdateRequest(BaseModel):
     salon_id: int
@@ -308,6 +318,22 @@ async def api_update_service(request: Request, req: UpdateServiceRequest):
     if not salon_id:
         return {"status": "error", "message": "Oturum bulunamadı"}
     update_service_item(req.service_id, salon_id, req.name, req.duration_minutes, req.price)
+    return {"status": "success"}
+
+@app.post("/api/salon/update-google-maps")
+async def api_update_google_maps(request: Request, req: UpdateGoogleMapsRequest):
+    salon_id = get_session_salon_id(request)
+    if not salon_id:
+        return {"status": "error", "message": "Oturum bulunamadı"}
+    update_salon_google_maps(salon_id, req.google_maps_url)
+    return {"status": "success"}
+
+@app.post("/api/service/flash-deal")
+async def api_service_flash_deal(request: Request, req: FlashDealRequest):
+    salon_id = get_session_salon_id(request)
+    if not salon_id:
+        return {"status": "error", "message": "Oturum bulunamadı"}
+    toggle_service_flash_deal(req.service_id, salon_id, req.is_flash_deal, req.discount_percent)
     return {"status": "success"}
 
 # SUPER ADMIN ROUTES
