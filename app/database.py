@@ -5,12 +5,114 @@ import hashlib
 import random
 from datetime import datetime, timedelta
 
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "salonn_app.db")
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+class DictRow(dict):
+    def __init__(self, data_dict, tuple_data=None):
+        super().__init__(data_dict)
+        self._tuple = tuple_data if tuple_data is not None else tuple(data_dict.values())
+
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            return self._tuple[key]
+        return super().__getitem__(key)
+
+class DBConnection:
+    def __init__(self):
+        self.is_pg = bool(DATABASE_URL)
+        if self.is_pg:
+            import psycopg2
+            pg_url = DATABASE_URL
+            if pg_url.startswith("postgres://"):
+                pg_url = pg_url.replace("postgres://", "postgresql://", 1)
+            self.conn = psycopg2.connect(pg_url)
+        else:
+            db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "salonn_app.db")
+            self.conn = sqlite3.connect(db_path)
+            self.conn.row_factory = sqlite3.Row
+
+    def cursor(self):
+        return DBCursor(self.conn, self.is_pg)
+
+    def commit(self):
+        self.conn.commit()
+
+    def close(self):
+        self.conn.close()
+
+class DBCursor:
+    def __init__(self, conn, is_pg):
+        self.conn = conn
+        self.is_pg = is_pg
+        self.raw_cursor = conn.cursor()
+        self.lastrowid = None
+
+    def execute(self, query, params=None):
+        params = params or ()
+        if self.is_pg:
+            query_pg = query.replace("?", "%s")
+            query_pg = query_pg.replace("INTEGER PRIMARY KEY AUTOINCREMENT", "SERIAL PRIMARY KEY")
+            query_pg = query_pg.replace("MIN(total_sessions, completed_sessions + 1)", "LEAST(total_sessions, completed_sessions + 1)")
+            
+            is_insert = query_pg.strip().upper().startswith("INSERT")
+            if is_insert and "RETURNING" not in query_pg.upper():
+                query_pg_ret = query_pg.strip() + " RETURNING id"
+                try:
+                    self.raw_cursor.execute(query_pg_ret, params)
+                    res = self.raw_cursor.fetchone()
+                    if res:
+                        self.lastrowid = res[0]
+                    return
+                except Exception:
+                    self.raw_cursor.execute(query_pg, params)
+                    return
+
+            self.raw_cursor.execute(query_pg, params)
+        else:
+            self.raw_cursor.execute(query, params)
+            self.lastrowid = self.raw_cursor.lastrowid
+
+    def executemany(self, query, params_list):
+        if self.is_pg:
+            query_pg = query.replace("?", "%s")
+            self.raw_cursor.executemany(query_pg, params_list)
+        else:
+            self.raw_cursor.executemany(query, params_list)
+
+    def fetchone(self):
+        row = self.raw_cursor.fetchone()
+        if not row:
+            return None
+        if self.is_pg:
+            if hasattr(self.raw_cursor, 'description') and self.raw_cursor.description:
+                colnames = [desc[0] for desc in self.raw_cursor.description]
+                d = dict(zip(colnames, row))
+                return DictRow(d, tuple(row))
+            return row
+        d = dict(row)
+        return DictRow(d, tuple(d.values()))
+
+    def fetchall(self):
+        rows = self.raw_cursor.fetchall()
+        if not rows:
+            return []
+        if self.is_pg:
+            if hasattr(self.raw_cursor, 'description') and self.raw_cursor.description:
+                colnames = [desc[0] for desc in self.raw_cursor.description]
+                res = []
+                for row in rows:
+                    d = dict(zip(colnames, row))
+                    res.append(DictRow(d, tuple(row)))
+                return res
+            return rows
+        res = []
+        for r in rows:
+            d = dict(r)
+            res.append(DictRow(d, tuple(r.values())))
+        return res
 
 def get_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+    return DBConnection()
 
 def tr_slugify(text):
     if not text:
@@ -330,11 +432,11 @@ def get_salon_dashboard_data(salon_id, target_date=None):
     cutoff_date = (datetime.now() - timedelta(days=20)).strftime("%Y-%m-%d")
     try:
         cursor.execute("""
-            SELECT customer_name, customer_phone, MAX(appointment_date) as last_date, COUNT(*) as visit_count
+            SELECT MAX(customer_name) as customer_name, customer_phone, MAX(appointment_date) as last_date, COUNT(*) as visit_count
             FROM appointments
             WHERE salon_id = ?
             GROUP BY customer_phone
-            HAVING last_date <= ?
+            HAVING MAX(appointment_date) <= ?
             ORDER BY last_date ASC
             LIMIT 10
         """, (salon_id, cutoff_date))
@@ -535,44 +637,4 @@ def update_salon_subscription(salon_id, new_plan):
 
     cursor.execute("""
         UPDATE salons 
-        SET subscription_plan = ?, subscription_status = 'ACTIVE', created_at = ? 
-        WHERE id = ?
-    """, (new_plan, created_at_val, salon_id))
-    conn.commit()
-    conn.close()
-
-def delete_salon_admin(salon_id):
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM appointments WHERE salon_id = ?", (salon_id,))
-    cursor.execute("DELETE FROM customer_packages WHERE salon_id = ?", (salon_id,))
-    cursor.execute("DELETE FROM staff WHERE salon_id = ?", (salon_id,))
-    cursor.execute("DELETE FROM services WHERE salon_id = ?", (salon_id,))
-    cursor.execute("DELETE FROM salons WHERE id = ?", (salon_id,))
-    conn.commit()
-    conn.close()
-
-def update_salon_google_maps(salon_id, maps_url):
-    conn = get_db()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("ALTER TABLE salons ADD COLUMN google_maps_url TEXT")
-        conn.commit()
-    except Exception:
-        pass
-    cursor.execute("UPDATE salons SET google_maps_url = ? WHERE id = ?", (maps_url, salon_id))
-    conn.commit()
-    conn.close()
-
-def toggle_service_flash_deal(service_id, salon_id, is_flash_deal: bool, discount_percent: int = 20):
-    conn = get_db()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("ALTER TABLE services ADD COLUMN is_flash_deal INTEGER DEFAULT 0")
-        cursor.execute("ALTER TABLE services ADD COLUMN discount_percent INTEGER DEFAULT 0")
-        conn.commit()
-    except Exception:
-        pass
-    cursor.execute("UPDATE services SET is_flash_deal = ?, discount_percent = ? WHERE id = ? AND salon_id = ?", (1 if is_flash_deal else 0, discount_percent, service_id, salon_id))
-    conn.commit()
-    conn.close()
+        SET subscription_plan = ?, subscription_status = 'ACTIVE', created_at
