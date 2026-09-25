@@ -349,6 +349,12 @@ def get_salon_dashboard_data(salon_id, target_date=None):
             {"customer_name": "Deniz Arslan", "customer_phone": "0555 333 4455", "last_date": "2026-07-25", "visit_count": 2}
         ]
 
+    birthday_customers = [
+        {"customer_name": "Zeynep Yılmaz", "customer_phone": "0532 555 1234", "birth_date": "25 Eylül (Bugün 🥳)", "suggested_gift": "%25 İndirimli Fön & Cilt Bakımı"},
+        {"customer_name": "Merve Öztürk", "customer_phone": "0542 333 4455", "birth_date": "28 Eylül", "suggested_gift": "%20 İndirimli Lazer Seansı"},
+        {"customer_name": "Büşra Yıldız", "customer_phone": "0535 777 8899", "birth_date": "30 Eylül", "suggested_gift": "Hediye Manikür & Kalıcı Oje"}
+    ]
+
     conn.close()
 
     # Check 24-hour trial expiration
@@ -376,6 +382,7 @@ def get_salon_dashboard_data(salon_id, target_date=None):
         "active_packages_count": active_packages_count,
         "today_appointments": today_appointments,
         "lost_customers": lost_customers,
+        "birthday_customers": birthday_customers,
         "staff": staff,
         "services": services,
         "packages": packages,
