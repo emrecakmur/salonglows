@@ -84,6 +84,13 @@
             </div>
 
             <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-md">
+                <p class="text-xs font-bold text-slate-400 mb-1">Yeni Kaydolanlar (Son 48s)</p>
+                {% set new_count = salons | selectattr('is_new_user', 'equalto', True) | list | length %}
+                <h3 class="text-3xl font-black text-cyan-400">{{ new_count }} Yeni</h3>
+                <p class="text-[11px] text-cyan-400 mt-1"><i class="fa-solid fa-user-plus"></i> Yeni kayıt olan işletmeler</p>
+            </div>
+
+            <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-md">
                 <p class="text-xs font-bold text-slate-400 mb-1">Aktif PRO / VIP Üye</p>
                 {% set active_count = salons | selectattr('is_expired', 'equalto', False) | list | length %}
                 <h3 class="text-3xl font-black text-emerald-400">{{ active_count }}</h3>
@@ -94,14 +101,7 @@
                 <p class="text-xs font-bold text-slate-400 mb-1">Denemesi Dolanlar</p>
                 {% set expired_count = salons | selectattr('is_expired', 'equalto', True) | list | length %}
                 <h3 class="text-3xl font-black text-amber-400">{{ expired_count }}</h3>
-                <p class="text-[11px] text-amber-400 mt-1"><i class="fa-solid fa-clock"></i> Ödeme / Aktivasyon bekleyenler</p>
-            </div>
-
-            <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-md">
-                <p class="text-xs font-bold text-slate-400 mb-1">Toplam Randevu Hacmi</p>
-                {% set total_apps = salons | sum(attribute='total_appointments') %}
-                <h3 class="text-3xl font-black text-purple-400">{{ total_apps }}</h3>
-                <p class="text-[11px] text-purple-400 mt-1"><i class="fa-solid fa-calendar-check"></i> Oluşturulan toplam işlem</p>
+                <p class="text-[11px] text-amber-400 mt-1"><i class="fa-solid fa-clock"></i> Kilitli / Aktivasyon bekleyenler</p>
             </div>
         </div>
 
@@ -112,7 +112,7 @@
                     <h3 class="text-lg font-black text-white flex items-center gap-2">
                         <i class="fa-solid fa-users-gear text-pink-500"></i> Kayıtlı Salon Üyelikleri & Paket Yönetimi
                     </h3>
-                    <p class="text-xs text-slate-400">Salon sahiplerinin paketlerini tek tıkla aktif edin veya deneme sürelerini uzatın</p>
+                    <p class="text-xs text-slate-400">Salon sahiplerinin paketlerini tek tıkla aktif edin veya panellerine sızıp inceleyin</p>
                 </div>
 
                 <div class="w-full md:w-72">
@@ -126,7 +126,7 @@
                         <tr class="text-slate-400 border-b border-slate-800 pb-2">
                             <th class="py-3 px-3">ID</th>
                             <th class="py-3 px-3">Salon & Yetkili</th>
-                            <th class="py-3 px-3">Şehir</th>
+                            <th class="py-3 px-3">Kayıt Tarihi</th>
                             <th class="py-3 px-3">İletişim & WhatsApp</th>
                             <th class="py-3 px-3">Üyelik Paketi & Durum</th>
                             <th class="py-3 px-3">İşlem Hacmi</th>
@@ -135,14 +135,24 @@
                     </thead>
                     <tbody class="divide-y divide-slate-800/60">
                         {% for s in salons %}
-                        <tr class="hover:bg-slate-800/40 transition salon-row">
+                        <tr class="hover:bg-slate-800/40 transition salon-row {% if s.is_new_user %}bg-cyan-950/20 border-l-4 border-cyan-500{% endif %}">
                             <td class="py-4 px-3 font-bold text-slate-500">#{{ s.id }}</td>
                             <td class="py-4 px-3">
-                                <div class="font-black text-white text-sm">{{ s.name }}</div>
-                                <div class="text-[11px] text-slate-400">Yetkili: {{ s.owner_name }}</div>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-black text-white text-sm">{{ s.name }}</span>
+                                    {% if s.is_new_user %}
+                                    <span class="bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-[9px] font-black px-2 py-0.5 rounded-full uppercase">🆕 Yeni Kayıt</span>
+                                    {% endif %}
+                                </div>
+                                <div class="text-[11px] text-slate-400">Yetkili: {{ s.owner_name }} ({{ s.city }})</div>
                                 <a href="/b/{{ s.slug }}" target="_blank" class="text-[10px] text-pink-400 hover:underline">/b/{{ s.slug }} <i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i></a>
                             </td>
-                            <td class="py-4 px-3 font-semibold text-slate-300">{{ s.city }}</td>
+                            <td class="py-4 px-3">
+                                <div class="font-mono text-slate-300 text-[11px]">{{ s.created_at or 'Önceki Kayıt' }}</div>
+                                {% if 'Deneme' in s.subscription_plan %}
+                                <div class="text-[10px] text-amber-400 font-bold mt-0.5"><i class="fa-solid fa-clock"></i> {{ s.hours_left }} Saat Deneme Kaldı</div>
+                                {% endif %}
+                            </td>
                             <td class="py-4 px-3">
                                 <div class="text-slate-300 font-mono">{{ s.phone }}</div>
                                 <div class="text-[10px] text-slate-400">{{ s.email }}</div>
@@ -168,6 +178,9 @@
                             </td>
                             <td class="py-4 px-3 text-right">
                                 <div class="flex items-center justify-end gap-1.5 flex-wrap">
+                                    <a href="/super-admin/impersonate/{{ s.id }}" target="_blank" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-lg text-[11px] transition shadow-sm flex items-center gap-1">
+                                        <i class="fa-solid fa-right-to-bracket"></i> ⚡ Paneline Giriş Yap
+                                    </a>
                                     <button onclick="updateSubscription({{ s.id }}, 'Aylık PRO Salon Paketi')" title="1 Ay PRO Paket Yap (990 ₺)" class="px-2.5 py-1.5 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-extrabold rounded-lg text-[11px] transition shadow-sm flex items-center gap-1">
                                         <i class="fa-solid fa-crown text-amber-300"></i> Aylık PRO
                                     </button>
@@ -228,7 +241,7 @@
 
         async function deleteSalon(salonId, salonName) {
             if (confirm(`"${salonName}" salonunu ve tüm verilerini sistemden kalıcı olarak silmek istediğinize emin misiniz?`)) {
-                const res = await fetch('/api/admin/delete-salon', {
+                const res = await fetch(`/api/admin/delete-salon`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ salon_id: salonId })
