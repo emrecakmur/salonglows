@@ -138,7 +138,7 @@ def seed_demo_salon(cursor):
     pass_hash = hash_password("123456")
     cursor.execute("""
         INSERT INTO salons (name, slug, owner_name, email, password_hash, phone, city, subscription_plan, subscription_status)
-        VALUES ('Glamour Güzellik Salonu', 'glamour-guzellik', 'Zeynep Yılmaz', 'demo@glamour.com', ?, '0532 555 1234', 'İstanbul / Kadıköy', 'Aylık PRO Salon Paketi (1 Gün Deneme)', 'ACTIVE')
+        VALUES ('Glamour Güzellik Salonu', 'glamour-guzellik', 'Zeynep Yılmaz', 'demo@glamour.com', ?, '0532 555 1234', 'İstanbul / Kadıköy', '3 Günlük PRO Deneme Paketi', 'ACTIVE')
     """, (pass_hash,))
     salon_id = cursor.lastrowid
 
@@ -199,7 +199,7 @@ def register_new_salon(name, owner_name, email, password, phone, city):
     
     cursor.execute("""
         INSERT INTO salons (name, slug, owner_name, email, password_hash, phone, city, subscription_plan, subscription_status, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, 'Aylık PRO Salon Paketi (1 Gün Deneme)', 'ACTIVE', ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, '3 Günlük PRO Deneme Paketi', 'ACTIVE', ?)
     """, (name, slug, owner_name, email, pass_hash, phone, city, now_str))
     salon_id = cursor.lastrowid
     
@@ -357,16 +357,22 @@ def get_salon_dashboard_data(salon_id, target_date=None):
 
     conn.close()
 
-    # Check 24-hour trial expiration
+    # Check 3-day (72-hour) trial expiration
     created_at_str = salon.get('created_at')
     is_expired = False
-    hours_left = 24
-    if created_at_str and 'Deneme' in salon.get('subscription_plan', ''):
+    days_left = 3
+    hours_left = 0
+    total_hours_left = 72
+
+    if created_at_str and 'Deneme' in salon.get('subscription_plan', '') and not str(created_at_str).startswith('2099'):
         try:
             created_dt = datetime.strptime(str(created_at_str).split('.')[0], "%Y-%m-%d %H:%M:%S")
             elapsed_seconds = (datetime.now() - created_dt).total_seconds()
-            hours_left = max(0, int((86400 - elapsed_seconds) / 3600))
-            if elapsed_seconds >= 86400:
+            total_seconds_left = max(0, 259200 - elapsed_seconds)
+            total_hours_left = int(total_seconds_left / 3600)
+            days_left = int(total_hours_left / 24)
+            hours_left = total_hours_left % 24
+            if elapsed_seconds >= 259200:
                 is_expired = True
         except Exception:
             pass
@@ -388,7 +394,9 @@ def get_salon_dashboard_data(salon_id, target_date=None):
         "packages": packages,
         "salon": salon,
         "is_expired": is_expired,
-        "hours_left": hours_left
+        "days_left": days_left,
+        "hours_left": hours_left,
+        "total_hours_left": total_hours_left
     }
 
 def add_new_appointment(salon_id, customer_name, customer_phone, staff_name, service_name, appointment_date, appointment_time, price, notes=""):
@@ -483,15 +491,29 @@ def get_all_salons_admin():
     for s in salons:
         created_at_str = s.get('created_at')
         is_expired = False
-        if created_at_str and 'Deneme' in s.get('subscription_plan', ''):
+        is_new_user = False
+        days_left = 3
+        hours_left = 0
+        total_hours_left = 72
+        if created_at_str and not str(created_at_str).startswith('2099'):
             try:
                 created_dt = datetime.strptime(str(created_at_str).split('.')[0], "%Y-%m-%d %H:%M:%S")
                 elapsed_seconds = (datetime.now() - created_dt).total_seconds()
-                if elapsed_seconds >= 86400:
+                total_seconds_left = max(0, 259200 - elapsed_seconds)
+                total_hours_left = int(total_seconds_left / 3600)
+                days_left = int(total_hours_left / 24)
+                hours_left = total_hours_left % 24
+                if elapsed_seconds <= 172800:  # 48 hours
+                    is_new_user = True
+                if 'Deneme' in s.get('subscription_plan', '') and elapsed_seconds >= 259200:
                     is_expired = True
             except Exception:
                 pass
         s['is_expired'] = is_expired
+        s['is_new_user'] = is_new_user
+        s['days_left'] = days_left
+        s['hours_left'] = hours_left
+        s['total_hours_left'] = total_hours_left
         
     conn.close()
     return salons
