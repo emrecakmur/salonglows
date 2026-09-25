@@ -381,5 +381,13 @@ async def api_admin_delete_salon(request: Request, req: AdminDeleteSalonRequest)
     delete_salon_admin(req.salon_id)
     return {"status": "success"}
 
+@app.get("/super-admin/impersonate/{salon_id}")
+async def super_admin_impersonate(request: Request, salon_id: int):
+    if request.cookies.get("admin_session") != "true":
+        return RedirectResponse(url="/super-admin", status_code=303)
+    response = RedirectResponse(url="/dashboard", status_code=303)
+    response.set_cookie(key="salon_session_id", value=str(salon_id), max_age=86400*30)
+    return response
+
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)
