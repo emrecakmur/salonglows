@@ -637,4 +637,44 @@ def update_salon_subscription(salon_id, new_plan):
 
     cursor.execute("""
         UPDATE salons 
-        SET subscription_plan = ?, subscription_status = 'ACTIVE', created_at
+        SET subscription_plan = ?, subscription_status = 'ACTIVE', created_at = ? 
+        WHERE id = ?
+    """, (new_plan, created_at_val, salon_id))
+    conn.commit()
+    conn.close()
+
+def delete_salon_admin(salon_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM appointments WHERE salon_id = ?", (salon_id,))
+    cursor.execute("DELETE FROM customer_packages WHERE salon_id = ?", (salon_id,))
+    cursor.execute("DELETE FROM staff WHERE salon_id = ?", (salon_id,))
+    cursor.execute("DELETE FROM services WHERE salon_id = ?", (salon_id,))
+    cursor.execute("DELETE FROM salons WHERE id = ?", (salon_id,))
+    conn.commit()
+    conn.close()
+
+def update_salon_google_maps(salon_id, maps_url):
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("ALTER TABLE salons ADD COLUMN google_maps_url TEXT")
+        conn.commit()
+    except Exception:
+        pass
+    cursor.execute("UPDATE salons SET google_maps_url = ? WHERE id = ?", (maps_url, salon_id))
+    conn.commit()
+    conn.close()
+
+def toggle_service_flash_deal(service_id, salon_id, is_flash_deal: bool, discount_percent: int = 20):
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("ALTER TABLE services ADD COLUMN is_flash_deal INTEGER DEFAULT 0")
+        cursor.execute("ALTER TABLE services ADD COLUMN discount_percent INTEGER DEFAULT 0")
+        conn.commit()
+    except Exception:
+        pass
+    cursor.execute("UPDATE services SET is_flash_deal = ?, discount_percent = ? WHERE id = ? AND salon_id = ?", (1 if is_flash_deal else 0, discount_percent, service_id, salon_id))
+    conn.commit()
+    conn.close()
