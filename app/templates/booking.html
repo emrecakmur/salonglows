@@ -72,6 +72,31 @@
                         <input type="text" id="custom-service-name" placeholder="İstediğiniz hizmeti yazınız (Örn: İpek Kirpik, Protez Bakımı vb.)" class="w-full p-3 rounded-2xl bg-slate-950 border border-pink-500/50 text-slate-200 text-xs font-semibold outline-none focus:border-pink-500">
                     </div>
                 </div>
+
+                <!-- SMART UPSELL (ÇAPRAZ SATIŞ) KUTUSU -->
+                <div class="mt-4 p-4 rounded-2xl bg-gradient-to-r from-purple-900/40 to-pink-900/40 border border-pink-500/40 space-y-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-amber-400 text-xs font-black">🔥 Randevunuza Özel Fırsat Ek Hizmet!</span>
+                        <span class="bg-pink-500/20 text-pink-300 text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase">%20 İndirimli</span>
+                    </div>
+                    <p class="text-[11px] text-slate-300">Ana hizmetinizin yanına indirimli ek bakım ekleyerek randevunuzu tamamlayın:</p>
+                    
+                    <label class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-pink-500/40 cursor-pointer transition">
+                        <div class="flex items-center gap-2.5">
+                            <input type="checkbox" id="upsell-addon-1" data-name="Manikür & Hızlı Bakım" data-price="250" class="text-pink-500 rounded focus:ring-pink-500 w-4 h-4 bg-slate-900 border-slate-700">
+                            <span class="text-xs font-bold text-slate-200">+ Manikür & Hızlı Bakım</span>
+                        </div>
+                        <span class="text-xs font-black text-emerald-400">+250 ₺ <span class="line-through text-slate-500 text-[10px]">350 ₺</span></span>
+                    </label>
+
+                    <label class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-pink-500/40 cursor-pointer transition">
+                        <div class="flex items-center gap-2.5">
+                            <input type="checkbox" id="upsell-addon-2" data-name="Saç Nem Terapisi & Maske" data-price="300" class="text-pink-500 rounded focus:ring-pink-500 w-4 h-4 bg-slate-900 border-slate-700">
+                            <span class="text-xs font-bold text-slate-200">+ Saç Nem Terapisi & Maske</span>
+                        </div>
+                        <span class="text-xs font-black text-emerald-400">+300 ₺ <span class="line-through text-slate-500 text-[10px]">450 ₺</span></span>
+                    </label>
+                </div>
             </div>
 
             <!-- Step 2: Select Staff -->
@@ -245,6 +270,22 @@
                         break;
                     }
                 }
+            }
+
+            // Check Smart Upsell addons
+            const addon1 = document.getElementById('upsell-addon-1');
+            const addon2 = document.getElementById('upsell-addon-2');
+            let addonsStr = [];
+            if (addon1 && addon1.checked) {
+                addonsStr.push(addon1.getAttribute('data-name'));
+                price += parseFloat(addon1.getAttribute('data-price')) || 250;
+            }
+            if (addon2 && addon2.checked) {
+                addonsStr.push(addon2.getAttribute('data-name'));
+                price += parseFloat(addon2.getAttribute('data-price')) || 300;
+            }
+            if (addonsStr.length > 0) {
+                selectedService += " + Ekstra (" + addonsStr.join(", ") + ")";
             }
 
             const date = document.getElementById('booking-date').value;
