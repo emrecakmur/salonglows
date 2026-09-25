@@ -12,6 +12,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ec4899;
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
@@ -35,8 +50,13 @@
             <!-- Header Action Items & SaaS Plan -->
             <div class="flex items-center gap-3">
                 <a href="/subscription" class="bg-slate-800 hover:bg-slate-700 px-3.5 py-1.5 rounded-xl border border-slate-700 text-xs font-semibold flex items-center gap-2 transition shadow-sm">
+                    {% if 'Deneme' in salon.subscription_plan %}
+                    <i class="fa-solid fa-clock text-amber-400"></i>
+                    <span class="text-slate-200"><strong class="text-amber-400">3 Günlük Deneme:</strong> {{ days_left }} Gün {{ hours_left }} Saat Kaldı</span>
+                    {% else %}
                     <i class="fa-solid fa-crown text-amber-400"></i>
                     <span class="text-slate-200"><strong class="text-pink-400">{{ salon.subscription_plan }}:</strong> AKTİF</span>
+                    {% endif %}
                 </a>
 
                 <a href="/b/{{ salon.slug }}" target="_blank" class="px-3.5 py-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-extrabold rounded-xl text-xs transition flex items-center gap-1.5 shadow-md">
@@ -115,29 +135,29 @@
                 </div>
             </div>
 
-            <!-- 5 KAZANÇ MOTORU GRID -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+            <!-- 5 KAZANÇ MOTORU GRID (RESPONSIVE 3-COLUMNS WITH RICH SPACING) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 
                 <!-- MOTOR 1: KAYIP MÜŞTERİ GERİ ÇAĞIRMA (WIN-BACK) -->
-                <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 flex flex-col justify-between shadow-md space-y-3">
+                <div class="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 flex flex-col justify-between shadow-md space-y-4">
                     <div>
                         <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-black text-pink-400 flex items-center gap-1.5">
-                                <i class="fa-solid fa-user-clock text-sm"></i> Kayıp Müşteri Çağırma
+                            <span class="text-sm font-black text-pink-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-user-clock text-base"></i> Kayıp Müşteri Çağırma
                             </span>
-                            <span class="bg-pink-500/20 text-pink-300 text-[9px] font-bold px-1.5 py-0.5 rounded">20+ Gün</span>
+                            <span class="bg-pink-500/20 text-pink-300 text-xs font-bold px-2 py-0.5 rounded-md">20+ Gün</span>
                         </div>
-                        <p class="text-[10px] text-slate-400 mb-2">20+ gündür gelmeyen müşterilerinize tek tıkla özel indirim yollayın.</p>
+                        <p class="text-xs text-slate-400 mb-3">20+ gündür gelmeyen müşterilerinize tek tıkla özel indirim yollayın.</p>
 
-                        <div class="space-y-2 max-h-44 overflow-y-auto pr-1">
+                        <div class="space-y-2 max-h-52 overflow-y-auto pr-1">
                             {% for lc in lost_customers %}
-                            <div class="p-2 bg-slate-900 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+                            <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
                                 <div>
-                                    <div class="font-bold text-white text-[10px]">{{ lc.customer_name }}</div>
-                                    <div class="text-[9px] text-slate-400">Son: {{ lc.last_date }}</div>
+                                    <div class="font-bold text-white text-xs">{{ lc.customer_name }}</div>
+                                    <div class="text-[11px] text-slate-400">Son: {{ lc.last_date }}</div>
                                 </div>
-                                <button onclick="sendWinBackWa('{{ lc.customer_name }}', '{{ lc.customer_phone }}')" class="px-2 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 font-extrabold rounded-lg text-[9px] transition border border-emerald-500/30 flex items-center gap-1">
-                                    <i class="fa-brands fa-whatsapp text-xs"></i> Çağır
+                                <button onclick="sendWinBackWa('{{ lc.customer_name }}', '{{ lc.customer_phone }}')" class="px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 font-extrabold rounded-lg text-xs transition border border-emerald-500/30 flex items-center gap-1">
+                                    <i class="fa-brands fa-whatsapp text-sm"></i> Çağır
                                 </button>
                             </div>
                             {% endfor %}
@@ -146,52 +166,52 @@
                 </div>
 
                 <!-- MOTOR 2: GOOGLE HARİTALAR 5 YILDIZ YORUM MOTORU -->
-                <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 flex flex-col justify-between shadow-md space-y-3">
+                <div class="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 flex flex-col justify-between shadow-md space-y-4">
                     <div>
                         <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-black text-amber-400 flex items-center gap-1.5">
-                                <i class="fa-solid fa-star text-sm"></i> Google 5 Yıldız
+                            <span class="text-sm font-black text-amber-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-star text-base"></i> Google 5 Yıldız Motoru
                             </span>
-                            <span class="bg-amber-500/20 text-amber-300 text-[9px] font-bold px-1.5 py-0.5 rounded">Mıknatıs</span>
+                            <span class="bg-amber-500/20 text-amber-300 text-xs font-bold px-2 py-0.5 rounded-md">Mıknatıs</span>
                         </div>
-                        <p class="text-[10px] text-slate-400 mb-2">Harita linkinizi girin, müşterilerinize 5 yıldız yorum daveti yollayın.</p>
+                        <p class="text-xs text-slate-400 mb-3">Harita linkinizi girin, müşterilerinize 5 yıldız yorum daveti yollayın.</p>
 
-                        <div class="space-y-2 text-xs">
+                        <div class="space-y-3 text-xs">
                             <div>
-                                <label class="block font-bold text-slate-300 mb-1 text-[10px]">Harita Yorum Linkiniz</label>
-                                <input type="url" id="google-maps-input" value="{{ salon.google_maps_url or '' }}" placeholder="https://maps.app.goo.gl/..." class="w-full p-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-[10px] outline-none focus:border-amber-500 font-mono">
+                                <label class="block font-bold text-slate-300 mb-1 text-xs">Google Harita Linkiniz</label>
+                                <input type="url" id="google-maps-input" value="{{ salon.google_maps_url or '' }}" placeholder="https://maps.app.goo.gl/..." class="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs outline-none focus:border-amber-500 font-mono">
                             </div>
-                            <button onclick="saveGoogleMapsUrl()" class="w-full py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold rounded-xl text-[10px] transition border border-slate-700">
+                            <button onclick="saveGoogleMapsUrl()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold rounded-xl text-xs transition border border-slate-700">
                                 <i class="fa-solid fa-floppy-disk mr-1"></i> Linki Kaydet
                             </button>
                         </div>
                     </div>
 
-                    <button onclick="sendGoogleReviewWa()" class="w-full py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-slate-950 font-black text-[10px] rounded-xl shadow-lg transition flex items-center justify-center gap-1">
-                        <i class="fa-brands fa-whatsapp text-xs"></i> 5 Yıldız Daveti At
+                    <button onclick="sendGoogleReviewWa()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-slate-950 font-black text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-1.5">
+                        <i class="fa-brands fa-whatsapp text-sm"></i> Son Müşteriye 5 Yıldız Daveti At
                     </button>
                 </div>
 
                 <!-- MOTOR 3: BOŞ KOLTUK FIRSAT SAATİ İNDİRİMİ -->
-                <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 flex flex-col justify-between shadow-md space-y-3">
+                <div class="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 flex flex-col justify-between shadow-md space-y-4">
                     <div>
                         <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-black text-purple-400 flex items-center gap-1.5">
-                                <i class="fa-solid fa-fire text-sm"></i> Fırsat Randevusu
+                            <span class="text-sm font-black text-purple-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-fire text-base"></i> Boş Koltuk Fırsat İndirimi
                             </span>
-                            <span class="bg-purple-500/20 text-purple-300 text-[9px] font-bold px-1.5 py-0.5 rounded">Fırsat %20</span>
+                            <span class="bg-purple-500/20 text-purple-300 text-xs font-bold px-2 py-0.5 rounded-md">Fırsat %20</span>
                         </div>
-                        <p class="text-[10px] text-slate-400 mb-2">Boş kalan koltuklarınızı paraya çevirmek için %20 Fırsat Etiketi koyun.</p>
+                        <p class="text-xs text-slate-400 mb-3">Boş kalan koltuklarınızı paraya çevirmek için bir hizmetinize %20 Fırsat Etiketi koyun.</p>
 
-                        <div class="space-y-2 max-h-44 overflow-y-auto pr-1">
+                        <div class="space-y-2 max-h-52 overflow-y-auto pr-1">
                             {% for srv in services %}
-                            <div class="p-2 bg-slate-900 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+                            <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
                                 <div>
-                                    <div class="font-bold text-white text-[10px]">{{ srv.name }}</div>
-                                    <div class="text-[9px] text-emerald-400 font-extrabold">{{ "{:,.0f}".format(srv.price).replace(',', '.') }} ₺</div>
+                                    <div class="font-bold text-white text-xs">{{ srv.name }}</div>
+                                    <div class="text-[11px] text-emerald-400 font-extrabold">{{ "{:,.0f}".format(srv.price).replace(',', '.') }} ₺</div>
                                 </div>
-                                <button onclick="toggleFlashDeal({{ srv.id }}, {{ 0 if srv.is_flash_deal else 1 }})" class="px-2 py-1 {% if srv.is_flash_deal %}bg-pink-600 text-white font-black{% else %}bg-slate-800 text-slate-400 font-bold{% endif %} rounded-lg text-[9px] transition border border-slate-700 flex items-center gap-1">
-                                    <i class="fa-solid fa-bolt"></i> {% if srv.is_flash_deal %}Aktif{% else %}Fırsat Yap{% endif %}
+                                <button onclick="toggleFlashDeal({{ srv.id }}, {{ 0 if srv.is_flash_deal else 1 }})" class="px-3 py-1.5 {% if srv.is_flash_deal %}bg-pink-600 text-white font-black{% else %}bg-slate-800 text-slate-400 font-bold{% endif %} rounded-lg text-xs transition border border-slate-700 flex items-center gap-1">
+                                    <i class="fa-solid fa-bolt"></i> {% if srv.is_flash_deal %}Fırsat Aktif{% else %}Fırsat Yap{% endif %}
                                 </button>
                             </div>
                             {% endfor %}
@@ -200,25 +220,25 @@
                 </div>
 
                 <!-- MOTOR 4: VIP DOĞUM GÜNÜ HEDİYE MOTORU -->
-                <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 flex flex-col justify-between shadow-md space-y-3">
+                <div class="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 flex flex-col justify-between shadow-md space-y-4">
                     <div>
                         <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-black text-rose-400 flex items-center gap-1.5">
-                                <i class="fa-solid fa-cake-candles text-sm"></i> Doğum Günü Kutlama
+                            <span class="text-sm font-black text-rose-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-cake-candles text-base"></i> Doğum Günü Kutlama
                             </span>
-                            <span class="bg-rose-500/20 text-rose-300 text-[9px] font-bold px-1.5 py-0.5 rounded">Hediye %25</span>
+                            <span class="bg-rose-500/20 text-rose-300 text-xs font-bold px-2 py-0.5 rounded-md">Hediye %25</span>
                         </div>
-                        <p class="text-[10px] text-slate-400 mb-2">Doğum günü yaklaşan müşterilerinize tek tıkla %25 indirimli kutlama mesajı yollayın.</p>
+                        <p class="text-xs text-slate-400 mb-3">Doğum günü yaklaşan müşterilerinize tek tıkla %25 indirimli kutlama mesajı yollayın.</p>
 
-                        <div class="space-y-2 max-h-44 overflow-y-auto pr-1">
+                        <div class="space-y-2 max-h-52 overflow-y-auto pr-1">
                             {% for bc in birthday_customers %}
-                            <div class="p-2 bg-slate-900 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+                            <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
                                 <div>
-                                    <div class="font-bold text-white text-[10px]">{{ bc.customer_name }}</div>
-                                    <div class="text-[9px] text-rose-400 font-semibold">{{ bc.birth_date }}</div>
+                                    <div class="font-bold text-white text-xs">{{ bc.customer_name }}</div>
+                                    <div class="text-[11px] text-rose-400 font-semibold">{{ bc.birth_date }}</div>
                                 </div>
-                                <button onclick="sendBirthdayWa('{{ bc.customer_name }}', '{{ bc.customer_phone }}')" class="px-2 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-extrabold rounded-lg text-[9px] transition border border-rose-500/30 flex items-center gap-1">
-                                    <i class="fa-brands fa-whatsapp text-xs"></i> Kutla
+                                <button onclick="sendBirthdayWa('{{ bc.customer_name }}', '{{ bc.customer_phone }}')" class="px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-extrabold rounded-lg text-xs transition border border-rose-500/30 flex items-center gap-1">
+                                    <i class="fa-brands fa-whatsapp text-sm"></i> Kutla
                                 </button>
                             </div>
                             {% endfor %}
@@ -227,24 +247,24 @@
                 </div>
 
                 <!-- MOTOR 5: ARKADAŞINI GETİR VİRAL MÜŞTERİ MIKNATISI -->
-                <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 flex flex-col justify-between shadow-md space-y-3">
+                <div class="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 flex flex-col justify-between shadow-md space-y-4">
                     <div>
                         <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-black text-cyan-400 flex items-center gap-1.5">
-                                <i class="fa-solid fa-users-viewfinder text-sm"></i> Arkadaşını Getir
+                            <span class="text-sm font-black text-cyan-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-users-viewfinder text-base"></i> Arkadaşını Getir Bonusu
                             </span>
-                            <span class="bg-cyan-500/20 text-cyan-300 text-[9px] font-bold px-1.5 py-0.5 rounded">Tavsiye</span>
+                            <span class="bg-cyan-500/20 text-cyan-300 text-xs font-bold px-2 py-0.5 rounded-md">Tavsiye</span>
                         </div>
-                        <p class="text-[10px] text-slate-400 mb-2">Reklam vermeden müşteri çekin: "Arkadaşını getir, ikinize de 100 TL indirim!" davet linkini paylaşın.</p>
+                        <p class="text-xs text-slate-400 mb-3">Reklam vermeden müşteri çekin: "Arkadaşını getir, ikinize de 100 TL indirim!" davet linkini paylaşın.</p>
                         
-                        <div class="p-2 bg-slate-900 rounded-xl border border-slate-800 text-xs space-y-1">
-                            <div class="text-[10px] text-slate-200 font-bold">✨ 1 Müşteri = 5 Arkadaş!</div>
-                            <div class="text-[9px] text-slate-400">WhatsApp listenize tavsiye kampanyasını tek tıkla yollayın.</div>
+                        <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs space-y-2">
+                            <div class="text-xs text-slate-200 font-bold">✨ 1 Müşteri = 5 Yeni Müşteri!</div>
+                            <div class="text-[11px] text-slate-400">WhatsApp listenize tavsiye kampanyasını tek tıkla yollayın.</div>
                         </div>
                     </div>
 
-                    <button onclick="sendReferralWa()" class="w-full py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-slate-950 font-black text-[10px] rounded-xl shadow-lg transition flex items-center justify-center gap-1">
-                        <i class="fa-brands fa-whatsapp text-xs"></i> Tavsiye Linkini Paylaş
+                    <button onclick="sendReferralWa()" class="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-slate-950 font-black text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-1.5">
+                        <i class="fa-brands fa-whatsapp text-sm"></i> Tavsiye Linkini Paylaş
                     </button>
                 </div>
 
@@ -1043,17 +1063,17 @@
         }
 
         {% if is_expired %}
-        <!-- 24 SAAT KİLİT EKRANI -->
+        <!-- 3 GÜNLÜK KİLİT EKRANI -->
         <div class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
             <div class="max-w-md w-full bg-slate-900 border-2 border-pink-500/80 rounded-3xl p-8 shadow-2xl text-center space-y-6">
                 <div class="w-20 h-20 rounded-3xl bg-pink-500/20 text-pink-400 border border-pink-500/30 flex items-center justify-center text-4xl mx-auto shadow-lg">
                     <i class="fa-solid fa-lock"></i>
                 </div>
                 <div>
-                    <h2 class="text-2xl font-black text-white">24 Saatlik Ücretsiz Deneme Süreniz Sona Ermiştir!</h2>
+                    <h2 class="text-2xl font-black text-white">3 Günlük Ücretsiz PRO Deneme Süreniz Sona Ermiştir!</h2>
                     <p class="text-xs text-slate-400 mt-2 font-medium">Salon yönetim panelinizi kesintisiz kullanmaya devam etmek için lütfen paketinizi WhatsApp üzerinden aktif edin.</p>
                 </div>
-                <a href="https://wa.me/905452772749?text=Merhaba%2C%20SalonGlow%2024%20Saatlik%20Deneme%20s%C3%BCrem%20doldu.%20Paketimi%20aktif%20etmek%20istiyorum.%20%C4%B0%C5%9Fletme%20Ad%C4%B1m%3A%20{{ salon.name }}" target="_blank" class="w-full py-4 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-black text-sm rounded-2xl transition shadow-xl block">
+                <a href="https://wa.me/905452772749?text=Merhaba%2C%20SalonGlow%203%20G%C3%BCnl%C3%BCk%20PRO%20Deneme%20s%C3%BCrem%20doldu.%20Paketimi%20aktif%20etmek%20istiyorum.%20%C4%B0%C5%9Fletme%20Ad%C4%B1m%3A%20{{ salon.name }}" target="_blank" class="w-full py-4 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-black text-sm rounded-2xl transition shadow-xl block">
                     <i class="fa-brands fa-whatsapp text-lg mr-2"></i> WhatsApp İle Paketinizi Aktif Edin (05452772749)
                 </a>
             </div>
