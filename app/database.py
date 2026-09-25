@@ -458,18 +458,39 @@ def get_salon_dashboard_data(salon_id, target_date=None):
         conn.rollback()
         lost_customers = []
 
-    if not lost_customers:
+    if not lost_customers and salon_id == 1:
         lost_customers = [
             {"customer_name": "Selin Demir", "customer_phone": "0533 111 2233", "last_date": "2026-08-10", "visit_count": 3},
             {"customer_name": "Elif Kaya", "customer_phone": "0544 222 3344", "last_date": "2026-08-01", "visit_count": 5},
             {"customer_name": "Deniz Arslan", "customer_phone": "0555 333 4455", "last_date": "2026-07-25", "visit_count": 2}
         ]
 
-    birthday_customers = [
-        {"customer_name": "Zeynep Yılmaz", "customer_phone": "0532 555 1234", "birth_date": "25 Eylül (Bugün 🥳)", "suggested_gift": "%25 İndirimli Fön & Cilt Bakımı"},
-        {"customer_name": "Merve Öztürk", "customer_phone": "0542 333 4455", "birth_date": "28 Eylül", "suggested_gift": "%20 İndirimli Lazer Seansı"},
-        {"customer_name": "Büşra Yıldız", "customer_phone": "0535 777 8899", "birth_date": "30 Eylül", "suggested_gift": "Hediye Manikür & Kalıcı Oje"}
-    ]
+    if salon_id == 1:
+        birthday_customers = [
+            {"customer_name": "Zeynep Yılmaz", "customer_phone": "0532 555 1234", "birth_date": "25 Eylül (Bugün 🥳)", "suggested_gift": "%25 İndirimli Fön & Cilt Bakımı"},
+            {"customer_name": "Merve Öztürk", "customer_phone": "0542 333 4455", "birth_date": "28 Eylül", "suggested_gift": "%20 İndirimli Lazer Seansı"},
+            {"customer_name": "Büşra Yıldız", "customer_phone": "0535 777 8899", "birth_date": "30 Eylül", "suggested_gift": "Hediye Manikür & Kalıcı Oje"}
+        ]
+    else:
+        try:
+            cursor.execute("""
+                SELECT DISTINCT customer_name, customer_phone
+                FROM appointments
+                WHERE salon_id = ?
+                LIMIT 5
+            """, (salon_id,))
+            real_custs = cursor.fetchall()
+            birthday_customers = []
+            for c in real_custs:
+                birthday_customers.append({
+                    "customer_name": c["customer_name"],
+                    "customer_phone": c["customer_phone"],
+                    "birth_date": "Yaklaşan Doğum Günü 🎉",
+                    "suggested_gift": "%20 Özel İndirim Hediyesi"
+                })
+        except Exception:
+            conn.rollback()
+            birthday_customers = []
 
     conn.close()
 
