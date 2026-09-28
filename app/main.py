@@ -39,86 +39,33 @@ templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
 @app.on_event("startup")
 def startup_event():
-    init_db()
+    try:
+        init_db()
+    except Exception as e:
+        print(f"Startup DB init error: {e}")
 
 def get_session_salon_id(request: Request) -> Optional[int]:
     salon_id_str = request.cookies.get("salon_session_id")
-    if salon_id_str and salon_id_str.isdigit():
-        return int(salon_id_str)
+    if salon_id_str:
+        try:
+            return int(salon_id_str)
+        except ValueError:
+            return None
     return None
 
-class NewAppointmentRequest(BaseModel):
-    salon_id: Optional[int] = None
-    customer_name: str
-    customer_phone: str
-    staff_name: str
-    service_name: str
-    appointment_date: str
-    appointment_time: str
-    price: float
-    notes: Optional[str] = ""
-
-class NewPackageRequest(BaseModel):
-    salon_id: Optional[int] = None
-    customer_name: str
-    customer_phone: str
-    package_name: str
-    total_sessions: int
-    total_price: float
-    paid_amount: float
-
-class NewStaffRequest(BaseModel):
-    name: str
-    title: str
-
-class NewServiceRequest(BaseModel):
-    name: str
-    duration_minutes: int
-    price: float
-
-class UpdateServiceRequest(BaseModel):
-    service_id: int
-    name: str
-    duration_minutes: int
-    price: float
-
-class UpdateGoogleMapsRequest(BaseModel):
-    google_maps_url: str
-
-class FlashDealRequest(BaseModel):
-    service_id: int
-    is_flash_deal: bool
-    discount_percent: int = 20
-
-class LogAICampaignRequest(BaseModel):
-    salon_id: Optional[int] = None
-    customer_name: str
-    customer_phone: str
-    campaign_type: str
-    offer_details: Optional[str] = ""
-    message_text: Optional[str] = ""
-
-class AdminSubscriptionUpdateRequest(BaseModel):
-    salon_id: int
-    new_plan: str
-
-class AdminDeleteSalonRequest(BaseModel):
-    salon_id: int
-
-@app.get("/", response_class=HTMLResponse)
-async def root(request: Request):
+@app.get("/")
+def home_redirect(request: Request):
     salon_id = get_session_salon_id(request)
     if salon_id:
         return RedirectResponse(url="/dashboard", status_code=303)
     return RedirectResponse(url="/login", status_code=303)
 
 @app.get("/register", response_class=HTMLResponse)
-async def register_page(request: Request, error: Optional[str] = None):
+def register_page(request: Request, error: Optional[str] = None):
     return templates.TemplateResponse(request=request, name="register.html", context={"error": error})
 
 @app.post("/register")
-async def register_submit(
-    request: Request,
+def register_action(
     name: str = Form(...),
     owner_name: str = Form(...),
     email: str = Form(...),
@@ -126,290 +73,312 @@ async def register_submit(
     phone: str = Form(...),
     city: str = Form(...)
 ):
-    try:
-        salon_id, slug = register_new_salon(name, owner_name, email, password, phone, city)
-        response = RedirectResponse(url="/dashboard", status_code=303)
-        response.set_cookie(key="salon_session_id", value=str(salon_id), max_age=86400*30)
-        return response
-    except Exception as e:
+    salon_id = register_new_salon(name, owner_name, email, password, phone, city)
+    if not salon_id:
         return templates.TemplateResponse(request=request, name="register.html", context={"error": "Bu e-posta adresi veya salon adı zaten kaydolmuş."})
+    
+    response = RedirectResponse(url="/dashboard", status_code=303)
+    response.set_cookie(key="salon_session_id", value=str(salon_id), httponly=True, max_age=86400*30)
+    return response
 
 @app.get("/login", response_class=HTMLResponse)
-async def login_page(request: Request, error: Optional[str] = None, success: Optional[str] = None):
+def login_page(request: Request, error: Optional[str] = None, success: Optional[str] = None):
     return templates.TemplateResponse(request=request, name="login.html", context={"error": error, "success": success})
 
 @app.post("/login")
-async def login_submit(
-    request: Request,
-    email: str = Form(...),
-    password: str = Form(...)
-):
+def login_action(email: str = Form(...), password: str = Form(...)):
     salon = authenticate_salon(email, password)
     if not salon:
         return templates.TemplateResponse(request=request, name="login.html", context={"error": "E-posta adresi veya şifre hatalı."})
     
     response = RedirectResponse(url="/dashboard", status_code=303)
-    response.set_cookie(key="salon_session_id", value=str(salon['id']), max_age=86400*30)
+    response.set_cookie(key="salon_session_id", value=str(salon['id']), httponly=True, max_age=86400*30)
     return response
 
 @app.get("/forgot-password", response_class=HTMLResponse)
-async def forgot_password_page(request: Request):
+def forgot_password_page(request: Request):
     return templates.TemplateResponse(request=request, name="forgot_password.html")
 
-@app.post("/forgot-password", response_class=HTMLResponse)
-async def forgot_password_submit(request: Request, background_tasks: BackgroundTasks, email: str = Form(...)):
-    code = create_password_reset_code(email)
-    if not code:
+@app.post("/forgot-password")
+def forgot_password_send_code(request: Request, background_tasks: BackgroundTasks, email: str = Form(...)):
+    email_clean = email.lower().strip()
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM salons WHERE email = ?", (email_clean,))
+    salon = cursor.fetchone()
+    conn.close()
+
+    if not salon:
         return templates.TemplateResponse(request=request, name="forgot_password.html", context={
-            "error": "Bu e-posta adresine ait kayıtlı salon bulunamadı."
+            "error": "Bu e-posta adresine ait bir salon hesabı bulunamadı."
         })
-        
-    background_tasks.add_task(send_password_reset_email, email, code)
-    
+
+    code = create_password_reset_code(email_clean)
+    background_tasks.add_task(send_password_reset_email, email_clean, code)
+
     return templates.TemplateResponse(request=request, name="forgot_password.html", context={
-        "email": email,
-        "step": 2,
-        "is_email_sent": True,
-        "success": f"{email} adresinize 6 haneli doğrulama kodu e-posta olarak gönderildi! Lütfen e-posta kutunuzu (spam klasörünü dahil) kontrol edin."
+        "email_sent": True,
+        "email": email_clean,
+        "success": "6 haneli doğrulama kodu e-posta adresinize gönderildi! (Spam klasörünü kontrol etmeyi unutmayın)"
     })
 
-@app.post("/reset-password", response_class=HTMLResponse)
-async def reset_password_submit(
+@app.post("/reset-password")
+def reset_password_action(
     request: Request,
     email: str = Form(...),
-    code: str = Form(...),
-    new_password: str = Form(...)
+    reset_code: str = Form(...),
+    new_password: str = Form(...),
+    confirm_password: str = Form(...)
 ):
-    success = verify_and_reset_password(email, code.strip(), new_password)
+    email_clean = email.lower().strip()
+    if new_password != confirm_password:
+        return templates.TemplateResponse(request=request, name="forgot_password.html", context={
+            "email_sent": True,
+            "email": email_clean,
+            "error": "Girdiğiniz yeni şifreler birbiriyle uyuşmuyor!"
+        })
+
+    if len(new_password) < 6:
+        return templates.TemplateResponse(request=request, name="forgot_password.html", context={
+            "email_sent": True,
+            "email": email_clean,
+            "error": "Yeni şifreniz en az 6 karakter olmalıdır."
+        })
+
+    success = verify_and_reset_password(email_clean, reset_code, new_password)
     if not success:
         return templates.TemplateResponse(request=request, name="forgot_password.html", context={
-            "email": email,
-            "generated_code": code,
-            "error": "Geçersiz veya süresi dolmuş kod. Lütfen tekrar deneyin."
+            "email_sent": True,
+            "email": email_clean,
+            "error": "Geçersiz veya süresi dolmuş kod! Lütfen kodu kontrol edin veya tekrar talep edin."
         })
-        
+
     return templates.TemplateResponse(request=request, name="login.html", context={
-        "success": "Şifreniz başarıyla güncellendi! Yeni şifrenizle giriş yapabilirsiniz."
+        "success": "Şifreniz başarıyla sıfırlandı! Yeni şifrenizle giriş yapabilirsiniz."
     })
 
 @app.get("/logout")
-async def logout():
+def logout_action():
     response = RedirectResponse(url="/login", status_code=303)
     response.delete_cookie(key="salon_session_id")
     return response
 
 @app.get("/dashboard", response_class=HTMLResponse)
-async def dashboard(request: Request, date: Optional[str] = None):
+def dashboard_page(request: Request, date: Optional[str] = None):
     salon_id = get_session_salon_id(request)
     if not salon_id:
         return RedirectResponse(url="/login", status_code=303)
-        
-    data = get_salon_dashboard_data(salon_id=salon_id, target_date=date)
+    
+    data = get_salon_dashboard_data(salon_id, target_date=date)
     if not data:
         response = RedirectResponse(url="/login", status_code=303)
         response.delete_cookie(key="salon_session_id")
         return response
-        
+    
     return templates.TemplateResponse(request=request, name="dashboard.html", context=data)
 
-@app.get("/b/{slug}", response_class=HTMLResponse)
-async def public_booking(request: Request, slug: str):
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM salons WHERE slug = ?", (slug,))
-    row = cursor.fetchone()
-    if not row:
-        cursor.execute("SELECT * FROM salons WHERE id = 1")
-        row = cursor.fetchone()
-    salon = dict(row)
-    
-    cursor.execute("SELECT * FROM staff WHERE salon_id = ?", (salon['id'],))
-    staff = [dict(r) for r in cursor.fetchall()]
-    
-    cursor.execute("SELECT * FROM services WHERE salon_id = ?", (salon['id'],))
-    services = [dict(r) for r in cursor.fetchall()]
-    conn.close()
-    
-    return templates.TemplateResponse(request=request, name="booking.html", context={
-        "salon": salon,
-        "staff": staff,
-        "services": services
-    })
+class LogAICampaignRequest(BaseModel):
+    customer_name: str
+    customer_phone: str
+    campaign_type: str
+    offer_details: Optional[str] = ""
+    message_text: Optional[str] = ""
 
-@app.get("/subscription", response_class=HTMLResponse)
-async def subscription_page(request: Request):
-    return templates.TemplateResponse(request=request, name="subscription.html")
-
-@app.get("/api/appointments/booked-times")
-async def api_booked_times(salon_id: int, date: str):
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT appointment_time FROM appointments WHERE salon_id = ? AND appointment_date = ?", (salon_id, date))
-    rows = cursor.fetchall()
-    conn.close()
-    booked = [r[0] for r in rows]
-    return {"booked_times": booked}
-
-@app.post("/api/appointment/add")
-async def api_add_appointment(request: Request, req: NewAppointmentRequest):
-    salon_id = req.salon_id or get_session_salon_id(request) or 1
-    new_id = add_new_appointment(
-        salon_id=salon_id,
-        customer_name=req.customer_name,
-        customer_phone=req.customer_phone,
-        staff_name=req.staff_name,
-        service_name=req.service_name,
-        appointment_date=req.appointment_date,
-        appointment_time=req.appointment_time,
-        price=req.price,
-        notes=req.notes or ""
-    )
-    return {"status": "success", "appointment_id": new_id}
-
-@app.post("/api/appointment/delete/{appointment_id}")
-async def api_delete_appointment(request: Request, appointment_id: int):
+@app.post("/api/ai/log-campaign")
+def api_log_ai_campaign(req_data: LogAICampaignRequest, request: Request):
     salon_id = get_session_salon_id(request)
     if not salon_id:
-        return {"status": "error", "message": "Oturum bulunamadı"}
+        return {"status": "error", "message": "Giriş yapmalısınız."}
+    
+    log_ai_campaign_interaction(
+        salon_id=salon_id,
+        customer_name=req_data.customer_name,
+        customer_phone=req_data.customer_phone,
+        campaign_type=req_data.campaign_type,
+        offer_details=req_data.offer_details,
+        message_text=req_data.message_text
+    )
+    return {"status": "success"}
+
+@app.get("/b/{slug}", response_class=HTMLResponse)
+def public_booking_page(slug: str, request: Request, success: Optional[bool] = False):
+    from app.database import get_salon_by_slug
+    data = get_salon_by_slug(slug)
+    if not data:
+        return HTMLResponse("<h1>404 - Salon Bulunamadı</h1>", status_code=404)
+    return templates.TemplateResponse(request=request, name="booking.html", context={
+        "salon": data["salon"],
+        "services": data["services"],
+        "staff": data["staff"],
+        "success": success
+    })
+
+@app.post("/b/{slug}/book")
+def public_booking_action(
+    slug: str,
+    customer_name: str = Form(...),
+    customer_phone: str = Form(...),
+    staff_name: str = Form(...),
+    service_name: str = Form(...),
+    appointment_date: str = Form(...),
+    appointment_time: str = Form(...),
+    notes: Optional[str] = Form("")
+):
+    from app.database import get_salon_by_slug, book_appointment_public
+    data = get_salon_by_slug(slug)
+    if not data:
+        return HTMLResponse("<h1>404 - Salon Bulunamadı</h1>", status_code=404)
+    
+    book_appointment_public(
+        salon_id=data["salon"]["id"],
+        customer_name=customer_name,
+        customer_phone=customer_phone,
+        staff_name=staff_name,
+        service_name=service_name,
+        appointment_date=appointment_date,
+        appointment_time=appointment_time,
+        notes=notes
+    )
+    return RedirectResponse(url=f"/b/{slug}?success=1", status_code=303)
+
+@app.post("/api/appointment/new")
+def create_appointment_api(
+    request: Request,
+    customer_name: str = Form(...),
+    customer_phone: str = Form(...),
+    staff_name: str = Form(...),
+    service_name: str = Form(...),
+    appointment_date: str = Form(...),
+    appointment_time: str = Form(...),
+    price: float = Form(...),
+    notes: Optional[str] = Form("")
+):
+    salon_id = get_session_salon_id(request)
+    if not salon_id:
+        return {"status": "error", "message": "Yetkisiz işlem"}
+    add_new_appointment(salon_id, customer_name, customer_phone, staff_name, service_name, appointment_date, appointment_time, price, notes=notes)
+    return {"status": "success"}
+
+@app.post("/api/appointment/delete/{appointment_id}")
+def delete_appointment_api(appointment_id: int, request: Request):
+    salon_id = get_session_salon_id(request)
+    if not salon_id:
+        return {"status": "error", "message": "Yetkisiz işlem"}
     delete_appointment(appointment_id, salon_id)
     return {"status": "success"}
 
-@app.post("/api/package/add")
-async def api_add_package(request: Request, req: NewPackageRequest):
-    salon_id = req.salon_id or get_session_salon_id(request) or 1
-    add_new_package(
-        salon_id=salon_id,
-        customer_name=req.customer_name,
-        customer_phone=req.customer_phone,
-        package_name=req.package_name,
-        total_sessions=req.total_sessions,
-        total_price=req.total_price,
-        paid_amount=req.paid_amount
-    )
+@app.post("/api/package/new")
+def create_package_api(
+    request: Request,
+    customer_name: str = Form(...),
+    customer_phone: str = Form(...),
+    package_name: str = Form(...),
+    total_sessions: int = Form(...),
+    total_price: float = Form(...),
+    paid_amount: float = Form(...)
+):
+    salon_id = get_session_salon_id(request)
+    if not salon_id:
+        return {"status": "error", "message": "Yetkisiz işlem"}
+    add_new_package(salon_id, customer_name, customer_phone, package_name, total_sessions, total_price, paid_amount)
     return {"status": "success"}
 
 @app.post("/api/package/use/{package_id}")
-async def api_use_session(package_id: int):
-    increment_package_session(package_id)
+def use_package_session_api(package_id: int, request: Request):
+    salon_id = get_session_salon_id(request)
+    if not salon_id:
+        return {"status": "error", "message": "Yetkisiz işlem"}
+    increment_package_session(package_id, salon_id)
     return {"status": "success"}
 
 @app.post("/api/package/delete/{package_id}")
-async def api_delete_package(request: Request, package_id: int):
+def delete_package_api(package_id: int, request: Request):
     salon_id = get_session_salon_id(request)
     if not salon_id:
-        return {"status": "error", "message": "Oturum bulunamadı"}
+        return {"status": "error", "message": "Yetkisiz işlem"}
     delete_customer_package(package_id, salon_id)
     return {"status": "success"}
 
-@app.post("/api/staff/add")
-async def api_add_staff(request: Request, req: NewStaffRequest):
-    salon_id = get_session_salon_id(request) or 1
-    add_staff_member(salon_id, req.name, req.title)
-    return {"status": "success"}
-
-@app.post("/api/service/add")
-async def api_add_service(request: Request, req: NewServiceRequest):
-    salon_id = get_session_salon_id(request) or 1
-    add_service_item(salon_id, req.name, req.duration_minutes, req.price)
+@app.post("/api/service/new")
+def add_service_api(
+    request: Request,
+    name: str = Form(...),
+    duration_minutes: int = Form(...),
+    price: float = Form(...),
+    category: str = Form(...)
+):
+    salon_id = get_session_salon_id(request)
+    if not salon_id:
+        return {"status": "error", "message": "Yetkisiz işlem"}
+    add_service_item(salon_id, name, duration_minutes, price, category)
     return {"status": "success"}
 
 @app.post("/api/service/delete/{service_id}")
-async def api_delete_service(request: Request, service_id: int):
+def delete_service_api(service_id: int, request: Request):
     salon_id = get_session_salon_id(request)
     if not salon_id:
-        return {"status": "error", "message": "Oturum bulunamadı"}
+        return {"status": "error", "message": "Yetkisiz işlem"}
     delete_service_item(service_id, salon_id)
     return {"status": "success"}
 
-@app.post("/api/service/update")
-async def api_update_service(request: Request, req: UpdateServiceRequest):
+@app.post("/api/service/update-price/{service_id}")
+def update_service_price_api(service_id: int, request: Request, price: float = Form(...)):
     salon_id = get_session_salon_id(request)
     if not salon_id:
-        return {"status": "error", "message": "Oturum bulunamadı"}
-    update_service_item(req.service_id, salon_id, req.name, req.duration_minutes, req.price)
+        return {"status": "error", "message": "Yetkisiz işlem"}
+    update_service_item(service_id, salon_id, price)
+    return {"status": "success"}
+
+@app.post("/api/staff/new")
+def add_staff_api(
+    request: Request,
+    name: str = Form(...),
+    title: str = Form(...),
+    color: str = Form("#ec4899")
+):
+    salon_id = get_session_salon_id(request)
+    if not salon_id:
+        return {"status": "error", "message": "Yetkisiz işlem"}
+    add_staff_member(salon_id, name, title, color)
     return {"status": "success"}
 
 @app.post("/api/salon/update-google-maps")
-async def api_update_google_maps(request: Request, req: UpdateGoogleMapsRequest):
+def update_google_maps_api(request: Request, google_maps_url: str = Form(...)):
     salon_id = get_session_salon_id(request)
     if not salon_id:
-        return {"status": "error", "message": "Oturum bulunamadı"}
-    update_salon_google_maps(salon_id, req.google_maps_url)
+        return {"status": "error", "message": "Yetkisiz işlem"}
+    update_salon_google_maps(salon_id, google_maps_url)
     return {"status": "success"}
 
-@app.post("/api/service/flash-deal")
-async def api_service_flash_deal(request: Request, req: FlashDealRequest):
+@app.post("/api/service/toggle-flash/{service_id}")
+def toggle_flash_deal_api(service_id: int, request: Request, is_flash: int = Form(...), discount: int = Form(20)):
     salon_id = get_session_salon_id(request)
     if not salon_id:
-        return {"status": "error", "message": "Oturum bulunamadı"}
-    toggle_service_flash_deal(req.service_id, salon_id, req.is_flash_deal, req.discount_percent)
+        return {"status": "error", "message": "Yetkisiz işlem"}
+    toggle_service_flash_deal(service_id, salon_id, is_flash, discount)
     return {"status": "success"}
 
-@app.post("/api/ai/log-campaign")
-async def api_log_ai_campaign(request: Request, req: LogAICampaignRequest):
-    salon_id = req.salon_id or get_session_salon_id(request) or 1
-    log_ai_campaign_interaction(
-        salon_id=salon_id,
-        customer_name=req.customer_name,
-        customer_phone=req.customer_phone,
-        campaign_type=req.campaign_type,
-        offer_details=req.offer_details or "",
-        message_text=req.message_text or ""
-    )
-    return {"status": "success"}
+@app.get("/subscription", response_class=HTMLResponse)
+def subscription_page(request: Request):
+    salon_id = get_session_salon_id(request)
+    if not salon_id:
+        return RedirectResponse(url="/login", status_code=303)
+    return templates.TemplateResponse(request=request, name="subscription.html")
 
-# SUPER ADMIN ROUTES
-@app.get("/super-admin", response_class=HTMLResponse)
-async def super_admin_page(request: Request):
-    is_admin = request.cookies.get("admin_session") == "true"
-    salons = get_all_salons_admin() if is_admin else []
-    return templates.TemplateResponse(request=request, name="admin.html", context={
-        "is_admin": is_admin,
-        "salons": salons,
-        "error": None
-    })
+@app.get("/admin", response_class=HTMLResponse)
+def admin_page(request: Request):
+    salons = get_all_salons_admin()
+    return templates.TemplateResponse(request=request, name="admin.html", context={"salons": salons})
 
-@app.post("/super-admin/login")
-async def super_admin_login(request: Request, admin_password: str = Form(...)):
-    valid_passwords = ["Emredadas549.", "05452772749", "admin123456", "admin2026"]
-    if admin_password.strip() in valid_passwords:
-        response = RedirectResponse(url="/super-admin", status_code=303)
-        response.set_cookie(key="admin_session", value="true", max_age=86400*7)
-        return response
-    
-    return templates.TemplateResponse(request=request, name="admin.html", context={
-        "is_admin": False,
-        "salons": [],
-        "error": "Geçersiz admin şifresi!"
-    })
+@app.post("/admin/update-plan/{salon_id}")
+def admin_update_plan(salon_id: int, plan: str = Form(...)):
+    update_salon_subscription(salon_id, plan)
+    return RedirectResponse(url="/admin", status_code=303)
 
-@app.get("/super-admin/logout")
-async def super_admin_logout():
-    response = RedirectResponse(url="/super-admin", status_code=303)
-    response.delete_cookie(key="admin_session")
-    return response
-
-@app.post("/api/admin/update-subscription")
-async def api_admin_update_subscription(request: Request, req: AdminSubscriptionUpdateRequest):
-    if request.cookies.get("admin_session") != "true":
-        return {"status": "error", "message": "Yetkisiz erişim"}
-    update_salon_subscription(req.salon_id, req.new_plan)
-    return {"status": "success"}
-
-@app.post("/api/admin/delete-salon")
-async def api_admin_delete_salon(request: Request, req: AdminDeleteSalonRequest):
-    if request.cookies.get("admin_session") != "true":
-        return {"status": "error", "message": "Yetkisiz erişim"}
-    delete_salon_admin(req.salon_id)
-    return {"status": "success"}
-
-@app.get("/super-admin/impersonate/{salon_id}")
-async def super_admin_impersonate(request: Request, salon_id: int):
-    if request.cookies.get("admin_session") != "true":
-        return RedirectResponse(url="/super-admin", status_code=303)
-    response = RedirectResponse(url="/dashboard", status_code=303)
-    response.set_cookie(key="salon_session_id", value=str(salon_id), max_age=86400*30)
-    return response
+@app.post("/admin/delete/{salon_id}")
+def admin_delete_salon(salon_id: int):
+    delete_salon_admin(salon_id)
+    return RedirectResponse(url="/admin", status_code=303)
 
 if __name__ == "__main__":
-    uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
