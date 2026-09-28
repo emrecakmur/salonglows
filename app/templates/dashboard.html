@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SalonGlow | Güzellik Salonu & Kuaför Yönetim Paneli</title>
+    <title>SalonGlow | AI Ciro Motoru & Salon Yönetim Paneli</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         ::-webkit-scrollbar {
@@ -27,28 +27,38 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #ec4899;
         }
+        .ai-glow-border {
+            box-shadow: 0 0 25px -5px rgba(236, 72, 153, 0.4), 0 0 15px -3px rgba(168, 85, 247, 0.3);
+        }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
 
     <!-- Header / Navbar -->
-    <header class="bg-slate-950 border-b border-slate-800 text-white sticky top-0 z-40 shadow-xl">
+    <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 text-white sticky top-0 z-40 shadow-xl">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-white text-xl font-bold shadow-lg">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-500 via-purple-600 to-indigo-600 flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-pink-500/20">
                     <i class="fa-solid fa-wand-magic-sparkles"></i>
                 </div>
                 <div>
                     <div class="flex items-center gap-2">
                         <h1 class="text-xl font-black tracking-tight text-white">Salon<span class="text-pink-500">Glow</span></h1>
-                        <span class="bg-pink-500/20 text-pink-400 border border-pink-500/30 text-[10px] font-extrabold px-2 py-0.5 rounded-md uppercase">Özel İşletme Paneli</span>
+                        <span class="bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-pink-400 border border-pink-500/30 text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+                            <i class="fa-solid fa-bolt text-[9px] mr-1"></i>AI CİRO MOTORU
+                        </span>
                     </div>
                     <p class="text-xs text-slate-400 font-medium">{{ salon.name }} (Yetkili: {{ salon.owner_name }}) - {{ salon.city }}</p>
                 </div>
             </div>
 
             <!-- Header Action Items & SaaS Plan -->
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2.5 flex-wrap justify-center">
+                <button onclick="openRoiReportModal()" class="px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-extrabold rounded-xl text-xs transition shadow-md flex items-center gap-1.5 border border-emerald-400/30">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>AI Katkı Raporu</span>
+                </button>
+
                 <a href="/subscription" class="bg-slate-800 hover:bg-slate-700 px-3.5 py-1.5 rounded-xl border border-slate-700 text-xs font-semibold flex items-center gap-2 transition shadow-sm">
                     {% if 'Deneme' in salon.subscription_plan %}
                     <i class="fa-solid fa-clock text-amber-400"></i>
@@ -59,9 +69,9 @@
                     {% endif %}
                 </a>
 
-                <a href="/b/{{ salon.slug }}" target="_blank" class="px-3.5 py-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-extrabold rounded-xl text-xs transition flex items-center gap-1.5 shadow-md">
+                <a href="/b/{{ salon.slug }}" target="_blank" class="px-3.5 py-1.5 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-extrabold rounded-xl text-xs transition flex items-center gap-1.5 shadow-md">
                     <i class="fa-brands fa-instagram text-sm"></i>
-                    <span>Instagram Bio Linkiniz</span>
+                    <span>Bio Linkiniz</span>
                     <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
                 </a>
 
@@ -72,10 +82,392 @@
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-8">
+
+        <!-- ANA SLOGAN & POZİSYONLANDIRMA BANNERI -->
+        <div class="bg-gradient-to-r from-slate-900 via-purple-950/40 to-slate-900 border border-purple-500/30 rounded-2xl p-4 flex flex-col md:flex-row justify-between items-center gap-3 shadow-lg">
+            <div class="flex items-center gap-3 text-center md:text-left">
+                <div class="w-10 h-10 rounded-xl bg-pink-500/20 text-pink-400 flex items-center justify-center text-lg shrink-0">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <div>
+                    <h2 class="text-sm md:text-base font-extrabold text-white tracking-tight">
+                        Sadece salonunuzu yönetmeyin. <span class="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">Salonunuzdaki kaçırılmış geliri bulun.</span>
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-0.5">SalonGlow, mevcut müşterilerinizden daha fazla gelir elde etmeniz için fırsatları otomatik olarak bulur.</p>
+                </div>
+            </div>
+            <button onclick="scrollToRadar()" class="px-4 py-2 bg-pink-600/30 hover:bg-pink-600/50 text-pink-300 border border-pink-500/40 rounded-xl text-xs font-bold transition flex items-center gap-2 shrink-0">
+                <i class="fa-solid fa-arrow-down"></i> Fırsatları İncele
+            </button>
+        </div>
+
+        <!-- 1. YENİ ANA BÖLÜM: AI CİRO RADARI (HERO SECTION) -->
+        <div id="ai-ciro-radari-section" class="bg-gradient-to-br from-slate-900 via-slate-900 to-purple-950/50 border-2 border-pink-500/70 rounded-3xl p-6 sm:p-8 ai-glow-border relative overflow-hidden space-y-6">
+            
+            <div class="absolute -right-24 -top-24 w-80 h-80 bg-pink-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -left-24 -bottom-24 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 pb-6 border-b border-slate-800 relative z-10">
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="w-3 h-3 rounded-full bg-pink-500 animate-pulse"></span>
+                        <span class="text-xs font-black tracking-widest uppercase text-pink-400">CANLI AI CİRO RADARI</span>
+                        <span class="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-black px-2 py-0.5 rounded-full uppercase">
+                            TAHMİNİ DEĞER
+                        </span>
+                    </div>
+                    <h3 class="text-2xl sm:text-3xl font-black text-white flex items-center gap-2.5">
+                        <span>💰 MASADA BEKLEYEN PARA</span>
+                    </h3>
+                    <p class="text-xs sm:text-sm text-slate-300 mt-1">Mevcut müşterilerinizden elde edilebilecek tahmini ek ciro potansiyeli</p>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-slate-950/80 border border-pink-500/40 p-4 sm:px-6 rounded-2xl shadow-inner w-full lg:w-auto justify-between">
+                    <div>
+                        <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tespit Edilen Ek Ciro</div>
+                        <div class="text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-rose-300 to-purple-400">
+                            ₺{{ ai_insights.total_potential_revenue_formatted }}
+                        </div>
+                    </div>
+                    <button onclick="openRoiReportModal()" class="px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs rounded-xl shadow-lg transition flex items-center gap-2 shrink-0">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Bu Ay Ne Kazandırdık?</span>
+                    </button>
+                </div>
+            </div>
+
+            {% if not ai_insights.has_enough_data %}
+            <div class="p-6 bg-slate-950/70 border border-dashed border-slate-700 rounded-2xl text-center space-y-2">
+                <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto text-xl">
+                    <i class="fa-solid fa-database"></i>
+                </div>
+                <h4 class="text-sm font-bold text-white">Yeterli Müşteri Verisi Henüz Oluşmadı</h4>
+                <p class="text-xs text-slate-400 max-w-lg mx-auto">
+                    {{ ai_insights.message }}
+                </p>
+            </div>
+            {% else %}
+
+            <!-- 5 FIRSAT KATEGORİSİ KARTLARI -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5 relative z-10">
+                <button onclick="switchAiTab('winback')" class="ai-cat-card p-4 rounded-2xl bg-slate-950/70 border border-rose-500/40 hover:border-rose-400 hover:bg-slate-900 transition text-left space-y-2 group">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-black text-rose-400 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-rose-500"></span> Geri Kazanım
+                        </span>
+                        <span class="text-[10px] bg-rose-500/20 text-rose-300 font-bold px-1.5 py-0.5 rounded">
+                            {{ ai_insights.categories.winback.opportunity_count }} Fırsat
+                        </span>
+                    </div>
+                    <div>
+                        <div class="text-lg font-black text-white">₺{{ ai_insights.categories.winback.potential_revenue_formatted }}</div>
+                        <div class="text-[11px] text-slate-400">{{ ai_insights.categories.winback.customer_count }} Kayıp Müşteri</div>
+                    </div>
+                </button>
+
+                <button onclick="switchAiTab('package_renewal')" class="ai-cat-card p-4 rounded-2xl bg-slate-950/70 border border-amber-500/40 hover:border-amber-400 hover:bg-slate-900 transition text-left space-y-2 group">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-black text-amber-400 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-amber-500"></span> Paket Yenileme
+                        </span>
+                        <span class="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-1.5 py-0.5 rounded">
+                            {{ ai_insights.categories.package_renewal.opportunity_count }} Fırsat
+                        </span>
+                    </div>
+                    <div>
+                        <div class="text-lg font-black text-white">₺{{ ai_insights.categories.package_renewal.potential_revenue_formatted }}</div>
+                        <div class="text-[11px] text-slate-400">{{ ai_insights.categories.package_renewal.customer_count }} Seansı Biten</div>
+                    </div>
+                </button>
+
+                <button onclick="switchAiTab('empty_slots')" class="ai-cat-card p-4 rounded-2xl bg-slate-950/70 border border-cyan-500/40 hover:border-cyan-400 hover:bg-slate-900 transition text-left space-y-2 group">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-black text-cyan-400 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-cyan-500"></span> Boş Koltuk AI
+                        </span>
+                        <span class="text-[10px] bg-cyan-500/20 text-cyan-300 font-bold px-1.5 py-0.5 rounded">
+                            {{ ai_insights.categories.empty_slots.opportunity_count }} Saat
+                        </span>
+                    </div>
+                    <div>
+                        <div class="text-lg font-black text-white">₺{{ ai_insights.categories.empty_slots.potential_revenue_formatted }}</div>
+                        <div class="text-[11px] text-slate-400">7 Günlük Boşluklar</div>
+                    </div>
+                </button>
+
+                <button onclick="switchAiTab('upsell')" class="ai-cat-card p-4 rounded-2xl bg-slate-950/70 border border-purple-500/40 hover:border-purple-400 hover:bg-slate-900 transition text-left space-y-2 group">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-black text-purple-400 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-purple-500"></span> Ek Hizmet / Upsell
+                        </span>
+                        <span class="text-[10px] bg-purple-500/20 text-purple-300 font-bold px-1.5 py-0.5 rounded">
+                            {{ ai_insights.categories.upsell.opportunity_count }} Öneri
+                        </span>
+                    </div>
+                    <div>
+                        <div class="text-lg font-black text-white">₺{{ ai_insights.categories.upsell.potential_revenue_formatted }}</div>
+                        <div class="text-[11px] text-slate-400">{{ ai_insights.categories.upsell.customer_count }} Müşteri</div>
+                    </div>
+                </button>
+
+                <button onclick="switchAiTab('campaigns_birthdays')" class="ai-cat-card p-4 rounded-2xl bg-slate-950/70 border border-emerald-500/40 hover:border-emerald-400 hover:bg-slate-900 transition text-left space-y-2 group">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-black text-emerald-400 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Doğum Günü / VIP
+                        </span>
+                        <span class="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-1.5 py-0.5 rounded">
+                            {{ ai_insights.categories.campaigns_birthdays.opportunity_count }} Fırsat
+                        </span>
+                    </div>
+                    <div>
+                        <div class="text-lg font-black text-white">₺{{ ai_insights.categories.campaigns_birthdays.potential_revenue_formatted }}</div>
+                        <div class="text-[11px] text-slate-400">{{ ai_insights.categories.campaigns_birthdays.customer_count }} Kutlama</div>
+                    </div>
+                </button>
+            </div>
+
+            <!-- DETAYLI RADAR SEKMELERİ & BUGÜN YAPILMASI GEREKENLER -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2 relative z-10">
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800 text-xs">
+                        <button onclick="switchAiTab('winback')" id="tab-btn-winback" class="ai-tab-btn px-3 py-1.5 rounded-xl font-bold bg-pink-600 text-white shadow-md">
+                            🔥 Geri Kazanım Fırsatları ({{ ai_insights.categories.winback.opportunity_count }})
+                        </button>
+                        <button onclick="switchAiTab('package_renewal')" id="tab-btn-package_renewal" class="ai-tab-btn px-3 py-1.5 rounded-xl font-bold bg-slate-900 text-slate-400 hover:text-white">
+                            📦 Paket Yenileme ({{ ai_insights.categories.package_renewal.opportunity_count }})
+                        </button>
+                        <button onclick="switchAiTab('empty_slots')" id="tab-btn-empty_slots" class="ai-tab-btn px-3 py-1.5 rounded-xl font-bold bg-slate-900 text-slate-400 hover:text-white">
+                            ⚡ Boş Koltuk AI ({{ ai_insights.categories.empty_slots.opportunity_count }})
+                        </button>
+                        <button onclick="switchAiTab('upsell')" id="tab-btn-upsell" class="ai-tab-btn px-3 py-1.5 rounded-xl font-bold bg-slate-900 text-slate-400 hover:text-white">
+                            ✨ Ek Hizmet / Upsell ({{ ai_insights.categories.upsell.opportunity_count }})
+                        </button>
+                        <button onclick="switchAiTab('ltv')" id="tab-btn-ltv" class="ai-tab-btn px-3 py-1.5 rounded-xl font-bold bg-slate-900 text-slate-400 hover:text-white">
+                            💎 Yüksek Değerli Müşteriler
+                        </button>
+                    </div>
+
+                    <!-- 1. SEKME İÇERİĞİ: GERİ KAZANIM FIRSATLARI -->
+                    <div id="ai-content-winback" class="ai-tab-content space-y-3">
+                        <div class="flex justify-between items-center text-xs text-slate-400 mb-1">
+                            <span class="font-bold text-white">🔥 EN SICAK GERİ KAZANIM FIRSATLARI</span>
+                            <span>Normal ziyaret periyodu geçmiş müşteriler</span>
+                        </div>
+
+                        {% if not ai_insights.categories.winback.customers %}
+                        <div class="p-6 bg-slate-950/60 rounded-2xl border border-dashed border-slate-800 text-center text-xs text-slate-400">
+                            Şu anda geri kazanılması gereken gecikmiş müşteri bulunmuyor.
+                        </div>
+                        {% endif %}
+
+                        {% for c in ai_insights.categories.winback.customers %}
+                        <div class="p-4 bg-slate-950/80 rounded-2xl border border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-rose-500/40 transition">
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2">
+                                    <h4 class="font-black text-white text-sm">{{ c.customer_name }}</h4>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase {% if c.priority == 'yüksek' %}bg-rose-500/20 text-rose-400 border border-rose-500/30{% elif c.priority == 'orta' %}bg-amber-500/20 text-amber-300 border border-amber-500/30{% else %}bg-blue-500/20 text-blue-400 border border-blue-500/30{% endif %}">
+                                        {{ c.priority }} Öncelik
+                                    </span>
+                                </div>
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-slate-400 pt-1">
+                                    <div>Son Ziyaret: <strong class="text-rose-400">{{ c.days_ago }} gün önce</strong></div>
+                                    <div>Normal Aralık: <strong class="text-slate-200">{{ c.normal_interval_days }} gün</strong></div>
+                                    <div>Ort. Harcama: <strong class="text-emerald-400">₺{{ "{:,.0f}".format(c.avg_spend).replace(',', '.') }}</strong></div>
+                                    <div>Yıllık LTV: <strong class="text-purple-300">₺{{ "{:,.0f}".format(c.annual_ltv).replace(',', '.') }}</strong></div>
+                                </div>
+                            </div>
+
+                            <button onclick="openAiMessageModal('{{ c.customer_name }}', '{{ c.customer_phone }}', 'Win-Back', {{ c.suggested_wa_msg | tojson }})" class="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-extrabold text-xs rounded-xl transition shadow-md flex items-center justify-center gap-1.5 shrink-0">
+                                <i class="fa-brands fa-whatsapp text-sm"></i> GERİ KAZAN
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- 2. SEKME İÇERİĞİ: PAKET YENİLEME -->
+                    <div id="ai-content-package_renewal" class="ai-tab-content space-y-3 hidden">
+                        <div class="flex justify-between items-center text-xs text-slate-400 mb-1">
+                            <span class="font-bold text-white">📦 PAKET YENİLEME FIRSATLARI</span>
+                            <span>Seansı biten veya son seansına yaklaşanlar</span>
+                        </div>
+
+                        {% if not ai_insights.categories.package_renewal.packages %}
+                        <div class="p-6 bg-slate-950/60 rounded-2xl border border-dashed border-slate-800 text-center text-xs text-slate-400">
+                            Şu anda paketini tamamlamak üzere olan müşteri bulunmuyor.
+                        </div>
+                        {% endif %}
+
+                        {% for p in ai_insights.categories.package_renewal.packages %}
+                        <div class="p-4 bg-slate-950/80 rounded-2xl border border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-amber-500/40 transition">
+                            <div class="space-y-1 w-full sm:w-auto">
+                                <div class="flex items-center gap-2">
+                                    <h4 class="font-black text-white text-sm">{{ p.customer_name }}</h4>
+                                    <span class="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-black px-2 py-0.5 rounded">
+                                        {{ p.status_badge }}
+                                    </span>
+                                </div>
+                                <div class="text-xs text-purple-300 font-semibold">{{ p.package_name }}</div>
+                                <div class="text-xs text-slate-400 flex items-center gap-3 pt-1">
+                                    <span>Tamamlanan: <strong class="text-pink-400">{{ p.completed_sessions }} / {{ p.total_sessions }} Seans</strong></span>
+                                    <span>Yenileme Değeri: <strong class="text-emerald-400">₺{{ "{:,.0f}".format(p.potential_revenue).replace(',', '.') }}</strong></span>
+                                </div>
+                            </div>
+
+                            <button onclick="openAiMessageModal('{{ p.customer_name }}', '{{ p.customer_phone }}', 'Paket Yenileme', {{ p.suggested_wa_msg | tojson }})" class="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-extrabold text-xs rounded-xl transition shadow-md flex items-center justify-center gap-1.5 shrink-0">
+                                <i class="fa-brands fa-whatsapp text-sm"></i> WHATSAPP MESAJI OLUŞTUR
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- 3. SEKME İÇERİĞİ: BOŞ KOLTUK AI -->
+                    <div id="ai-content-empty_slots" class="ai-tab-content space-y-3 hidden">
+                        <div class="flex justify-between items-center text-xs text-slate-400 mb-1">
+                            <span class="font-bold text-white">⚡ BOŞ KOLTUK AI & EŞLEŞEN MÜŞTERİLER</span>
+                            <span>Önümüzdeki 7 günün boş saatleri için müşteri eşleşmesi</span>
+                        </div>
+
+                        {% if not ai_insights.categories.empty_slots.slots %}
+                        <div class="p-6 bg-slate-950/60 rounded-2xl border border-dashed border-slate-800 text-center text-xs text-slate-400">
+                            Önümüzdeki günlerde tüm koltuklar dolu görünüyor.
+                        </div>
+                        {% endif %}
+
+                        {% for slot in ai_insights.categories.empty_slots.slots %}
+                        <div class="p-4 bg-slate-950/80 rounded-2xl border border-slate-800 space-y-3 hover:border-cyan-500/40 transition">
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2.5 py-1 bg-cyan-500/20 text-cyan-300 font-black rounded-lg text-xs border border-cyan-500/30">
+                                        {{ slot.date_str }} ({{ slot.day_name }}) Saat {{ slot.time }}
+                                    </span>
+                                    <span class="text-xs text-slate-400">{{ slot.scanned_count }} müşteri tarandı, <strong class="text-emerald-400">{{ slot.matched_count }} uygun bulundu</strong></span>
+                                </div>
+                                <span class="text-xs font-black text-emerald-400">₺{{ "{:,.0f}".format(slot.potential_revenue).replace(',', '.') }} Fırsat</span>
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <div class="text-[11px] font-bold text-slate-400">🔥 En Uygun Müşteriler:</div>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                    {% for mc in slot.matched_customers %}
+                                    <div class="p-2.5 bg-slate-900 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+                                        <div>
+                                            <div class="font-bold text-white">{{ mc.customer_name }}</div>
+                                            <div class="text-[10px] text-slate-400">{{ mc.preferred_service }}</div>
+                                        </div>
+                                        <button onclick="openAiMessageModal('{{ mc.customer_name }}', '{{ mc.customer_phone }}', 'Boş Koltuk', {{ mc.suggested_wa_msg | tojson }})" class="px-2 py-1 bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold text-[11px] rounded-lg transition shadow-sm">
+                                            TEKLİF GÖNDER
+                                        </button>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- 4. SEKME İÇERİĞİ: EK HİZMET / UPSELL RADARI -->
+                    <div id="ai-content-upsell" class="ai-tab-content space-y-3 hidden">
+                        <div class="flex justify-between items-center text-xs text-slate-400 mb-1">
+                            <span class="font-bold text-white">✨ EK HİZMET / UPSELL ÖNERİLERİ</span>
+                            <span>Müşteri geçmişine göre tamamlayıcı işlem fırsatları</span>
+                        </div>
+
+                        {% if not ai_insights.categories.upsell.opportunities %}
+                        <div class="p-6 bg-slate-950/60 rounded-2xl border border-dashed border-slate-800 text-center text-xs text-slate-400">
+                            Henüz ek hizmet önerisi için yeterli geçmiş veri bulunmuyor.
+                        </div>
+                        {% endif %}
+
+                        {% for up in ai_insights.categories.upsell.opportunities %}
+                        <div class="p-4 bg-slate-950/80 rounded-2xl border border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-purple-500/40 transition">
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2">
+                                    <h4 class="font-black text-white text-sm">{{ up.customer_name }}</h4>
+                                    <span class="text-xs text-slate-400">(Geçmiş: {{ up.past_services }})</span>
+                                </div>
+                                <div class="text-xs font-bold text-purple-300 flex items-center gap-1.5">
+                                    <span>Önerilen Tamamlayıcı: <strong>{{ up.suggested_service_name }}</strong></span>
+                                    <span class="text-emerald-400">(₺{{ "{:,.0f}".format(up.suggested_service_price).replace(',', '.') }})</span>
+                                </div>
+                                <p class="text-[11px] text-slate-400 bg-slate-900/60 px-2 py-1 rounded-lg border border-slate-800">
+                                    <strong class="text-amber-400">Neden:</strong> {{ up.reason }}
+                                </p>
+                            </div>
+
+                            <button onclick="openAiMessageModal('{{ up.customer_name }}', '{{ up.customer_phone }}', 'Ek Hizmet', {{ up.suggested_wa_msg | tojson }})" class="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-extrabold text-xs rounded-xl transition shadow-md flex items-center justify-center gap-1.5 shrink-0">
+                                <i class="fa-brands fa-whatsapp text-sm"></i> TEKLİF GÖNDER
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- 5. SEKME İÇERİĞİ: YÜKSEK DEĞERLİ MÜŞTERİLER (LTV) -->
+                    <div id="ai-content-ltv" class="ai-tab-content space-y-3 hidden">
+                        <div class="flex justify-between items-center text-xs text-slate-400 mb-1">
+                            <span class="font-bold text-white">💎 EN YÜKSEK DEĞERLİ MÜŞTERİLER (LTV SIRALAMASI)</span>
+                            <span>İşletmenize yıllık en fazla ciro sağlayan VIP portföyünüz</span>
+                        </div>
+
+                        {% for hv in ai_insights.high_value_customers %}
+                        <div class="p-4 bg-slate-950/80 rounded-2xl border border-slate-800 flex justify-between items-center hover:border-yellow-500/40 transition">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-yellow-500 to-amber-600 flex items-center justify-center text-slate-950 font-black text-sm">
+                                    👑
+                                </div>
+                                <div>
+                                    <h4 class="font-black text-white text-sm">{{ hv.customer_name }}</h4>
+                                    <div class="text-xs text-slate-400">Toplam {{ hv.visit_count }} Ziyaret | Son: {{ hv.days_since_last_visit }} gün önce</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs text-slate-400">Tahmini Yıllık Değer</div>
+                                <div class="text-base font-black text-yellow-400">₺{{ "{:,.0f}".format(hv.annual_ltv).replace(',', '.') }}/yıl</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- SAĞ 1 KOLON: BUGÜN YAPILMASI GEREKENLER (TOP 5 AI AKSIYONU) -->
+                <div class="space-y-4">
+                    <div class="bg-slate-950/90 rounded-2xl border border-pink-500/50 p-5 shadow-xl space-y-4">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                            <div class="flex items-center gap-2">
+                                <div class="w-7 h-7 rounded-lg bg-pink-500/20 text-pink-400 flex items-center justify-center text-xs font-bold">
+                                    <i class="fa-solid fa-list-check"></i>
+                                </div>
+                                <h4 class="text-sm font-black text-white tracking-tight">BUGÜN YAPILMASI GEREKENLER</h4>
+                            </div>
+                            <span class="text-[10px] bg-pink-500/20 text-pink-300 font-extrabold px-2 py-0.5 rounded-full">Top 5 Aksiyon</span>
+                        </div>
+
+                        <p class="text-[11px] text-slate-400">AI algoritması tarafından bugün işletmenize en yüksek parayı getirecek 5 hamle:</p>
+
+                        <div class="space-y-2.5">
+                            {% for act in ai_insights.today_top_actions %}
+                            <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 hover:border-pink-500/40 transition space-y-2 text-xs">
+                                <div class="flex justify-between items-start gap-2">
+                                    <span class="font-bold text-white leading-snug">{{ act.title }}</span>
+                                    <span class="text-emerald-400 font-black shrink-0">+₺{{ "{:,.0f}".format(act.potential_revenue).replace(',', '.') }}</span>
+                                </div>
+                                <p class="text-[11px] text-slate-400">{{ act.description }}</p>
+                                <button onclick="openAiMessageModal('{{ act.customer_name }}', '{{ act.customer_phone }}', '{{ act.campaign_type }}', {{ act.suggested_wa_msg | tojson }})" class="w-full py-1.5 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-extrabold text-[11px] rounded-lg transition shadow flex items-center justify-center gap-1.5">
+                                    <i class="fa-brands fa-whatsapp text-xs"></i> {{ act.action_text }}
+                                </button>
+                            </div>
+                            {% else %}
+                            <p class="text-xs text-slate-500 text-center py-4">Tüm acil aksiyonlar tamamlandı.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
 
         <!-- INSTAGRAM BIO LINK BANNER -->
-        <div class="bg-gradient-to-r from-purple-900/60 via-slate-800 to-pink-900/60 border border-purple-500/30 rounded-2xl p-4 mb-8 flex flex-col md:flex-row justify-between items-center gap-4 shadow-lg">
+        <div class="bg-gradient-to-r from-purple-900/60 via-slate-800 to-pink-900/60 border border-purple-500/30 rounded-2xl p-4 flex flex-col md:flex-row justify-between items-center gap-4 shadow-lg">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-pink-500/20 text-pink-400 flex items-center justify-center text-lg font-bold">
                     <i class="fa-solid fa-link"></i>
@@ -119,58 +511,24 @@
         </div>
 
         <!-- KASA KAZANÇ MOTORLARI & MÜŞTERİ ÇEKME MERKEZİ -->
-        <div class="bg-gradient-to-br from-purple-900/50 via-slate-900 to-pink-900/50 border-2 border-pink-500/60 rounded-3xl p-6 shadow-2xl mb-8 space-y-6">
+        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-4">
                 <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-white text-2xl font-black shadow-lg">
-                        <i class="fa-solid fa-rocket"></i>
+                    <div class="w-10 h-10 rounded-xl bg-pink-500/20 text-pink-400 flex items-center justify-center text-xl font-black">
+                        <i class="fa-solid fa-bullhorn"></i>
                     </div>
                     <div>
                         <div class="flex items-center gap-2">
-                            <h3 class="text-lg font-black text-white">Kasa Kazanç Motorları & Müşteri Çekme Merkezi</h3>
-                            <span class="bg-pink-500/20 text-pink-400 border border-pink-500/30 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase">Kasa Doldurucu 💰</span>
+                            <h3 class="text-base font-black text-white">Hızlı Pazarlama & Sadakat Motorları</h3>
+                            <span class="bg-pink-500/20 text-pink-400 border border-pink-500/30 text-[10px] font-black px-2 py-0.5 rounded-full uppercase">Kasa Doldurucu 💰</span>
                         </div>
-                        <p class="text-xs text-slate-300">Gelmeyen müşterilerinizi geri çağırın, boş saatlerinize fırsat tanımlayın ve Google'da 1. sıraya çıkın!</p>
+                        <p class="text-xs text-slate-400">Google Haritalar 5 Yıldız davetleri, Boş Koltuk indirimleri ve Arkadaşını Getir kampanyaları.</p>
                     </div>
                 </div>
             </div>
 
-            <!-- 5 KAZANÇ MOTORU GRID -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                
-                <!-- MOTOR 1: KAYIP MÜŞTERİ GERİ ÇAĞIRMA (WIN-BACK) -->
-                <div class="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 flex flex-col justify-between shadow-md space-y-4">
-                    <div>
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-sm font-black text-pink-400 flex items-center gap-1.5">
-                                <i class="fa-solid fa-user-clock text-base"></i> Kayıp Müşteri Çağırma
-                            </span>
-                            <span class="bg-pink-500/20 text-pink-300 text-xs font-bold px-2 py-0.5 rounded-md">20+ Gün</span>
-                        </div>
-                        <p class="text-xs text-slate-400 mb-3">20+ gündür gelmeyen müşterilerinize tek tıkla özel indirim yollayın.</p>
-
-                        <div class="space-y-2 max-h-52 overflow-y-auto pr-1">
-                            {% if not lost_customers %}
-                            <div class="p-3 bg-slate-900/60 rounded-xl border border-dashed border-slate-800 text-center text-slate-400 text-[11px]">
-                                Henüz 20+ gündür gelmeyen kayıp müşteriniz bulunmuyor. Müşterileriniz randevu aldıkça burada listelenecektir.
-                            </div>
-                            {% endif %}
-                            {% for lc in lost_customers %}
-                            <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
-                                <div>
-                                    <div class="font-bold text-white text-xs">{{ lc.customer_name }}</div>
-                                    <div class="text-[11px] text-slate-400">Son: {{ lc.last_date }}</div>
-                                </div>
-                                <button onclick="sendWinBackWa('{{ lc.customer_name }}', '{{ lc.customer_phone }}')" class="px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 font-extrabold rounded-lg text-xs transition border border-emerald-500/30 flex items-center gap-1">
-                                    <i class="fa-brands fa-whatsapp text-sm"></i> Çağır
-                                </button>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- MOTOR 2: GOOGLE HARİTALAR 5 YILDIZ YORUM MOTORU -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Google Haritalar 5 Yıldız -->
                 <div class="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 flex flex-col justify-between shadow-md space-y-4">
                     <div>
                         <div class="flex justify-between items-center mb-2">
@@ -197,7 +555,7 @@
                     </button>
                 </div>
 
-                <!-- MOTOR 3: BOŞ KOLTUK FIRSAT SAATİ İNDİRİMİ -->
+                <!-- Boş Koltuk Fırsat Saati -->
                 <div class="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 flex flex-col justify-between shadow-md space-y-4">
                     <div>
                         <div class="flex justify-between items-center mb-2">
@@ -206,7 +564,7 @@
                             </span>
                             <span class="bg-purple-500/20 text-purple-300 text-xs font-bold px-2 py-0.5 rounded-md">Fırsat %20</span>
                         </div>
-                        <p class="text-xs text-slate-400 mb-3">Boş kalan koltuklarınızı paraya çevirmek için bir hizmetinize %20 Fırsat Etiketi koyun.</p>
+                        <p class="text-xs text-slate-400 mb-3">Boş saatlerinizi doldurmak için bir hizmetinize %20 Fırsat Etiketi koyun.</p>
 
                         <div class="space-y-2 max-h-52 overflow-y-auto pr-1">
                             {% for srv in services %}
@@ -224,39 +582,7 @@
                     </div>
                 </div>
 
-                <!-- MOTOR 4: VIP DOĞUM GÜNÜ HEDİYE MOTORU -->
-                <div class="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 flex flex-col justify-between shadow-md space-y-4">
-                    <div>
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-sm font-black text-rose-400 flex items-center gap-1.5">
-                                <i class="fa-solid fa-cake-candles text-base"></i> Doğum Günü Kutlama
-                            </span>
-                            <span class="bg-rose-500/20 text-rose-300 text-xs font-bold px-2 py-0.5 rounded-md">Hediye %25</span>
-                        </div>
-                        <p class="text-xs text-slate-400 mb-3">Doğum günü yaklaşan müşterilerinize tek tıkla %25 indirimli kutlama mesajı yollayın.</p>
-
-                        <div class="space-y-2 max-h-52 overflow-y-auto pr-1">
-                            {% if not birthday_customers %}
-                            <div class="p-3 bg-slate-900/60 rounded-xl border border-dashed border-slate-800 text-center text-slate-400 text-[11px]">
-                                Henüz kayıtlı doğum günü müşteriniz bulunmuyor.
-                            </div>
-                            {% endif %}
-                            {% for bc in birthday_customers %}
-                            <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
-                                <div>
-                                    <div class="font-bold text-white text-xs">{{ bc.customer_name }}</div>
-                                    <div class="text-[11px] text-rose-400 font-semibold">{{ bc.birth_date }}</div>
-                                </div>
-                                <button onclick="sendBirthdayWa('{{ bc.customer_name }}', '{{ bc.customer_phone }}')" class="px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-extrabold rounded-lg text-xs transition border border-rose-500/30 flex items-center gap-1">
-                                    <i class="fa-brands fa-whatsapp text-sm"></i> Kutla
-                                </button>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- MOTOR 5: ARKADAŞINI GETİR VİRAL MÜŞTERİ MIKNATISI -->
+                <!-- Arkadaşını Getir Bonusu -->
                 <div class="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 flex flex-col justify-between shadow-md space-y-4">
                     <div>
                         <div class="flex justify-between items-center mb-2">
@@ -265,7 +591,7 @@
                             </span>
                             <span class="bg-cyan-500/20 text-cyan-300 text-xs font-bold px-2 py-0.5 rounded-md">Tavsiye</span>
                         </div>
-                        <p class="text-xs text-slate-400 mb-3">Reklam vermeden müşteri çekin: "Arkadaşını getir, ikinize de 100 TL indirim!" davet linkini paylaşın.</p>
+                        <p class="text-xs text-slate-400 mb-3">Reklam vermeden müşteri çekin: "Arkadaşını getir, ikinize de 100 TL indirim!" davetini paylaşın.</p>
                         
                         <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs space-y-2">
                             <div class="text-xs text-slate-200 font-bold">✨ 1 Müşteri = 5 Yeni Müşteri!</div>
@@ -277,12 +603,11 @@
                         <i class="fa-brands fa-whatsapp text-sm"></i> Tavsiye Linkini Paylaş
                     </button>
                 </div>
-
             </div>
         </div>
 
         <!-- DATE FILTER BAR (TAKVİM & TARİH FİLTRESİ) -->
-        <div class="bg-gradient-to-r from-slate-800 via-slate-800 to-slate-900 border border-slate-700 rounded-2xl p-4 mb-8 flex flex-col md:flex-row justify-between items-center gap-4 shadow-xl">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row justify-between items-center gap-4 shadow-xl">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-pink-500/20 text-pink-400 flex items-center justify-center text-lg font-bold">
                     <i class="fa-solid fa-calendar-days"></i>
@@ -301,13 +626,13 @@
             </div>
 
             <div class="flex items-center gap-2 flex-wrap w-full md:w-auto">
-                <a href="/dashboard?date={{ yesterday_date }}" class="px-3 py-2 bg-slate-950 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs border border-slate-700 transition flex items-center gap-1">
+                <a href="/dashboard?date={{ yesterday_date }}" class="px-3 py-2 bg-slate-950 hover:bg-slate-800 text-slate-300 font-bold rounded-xl text-xs border border-slate-700 transition flex items-center gap-1">
                     <i class="fa-solid fa-chevron-left text-[10px]"></i> Dün
                 </a>
                 <a href="/dashboard?date={{ today_date }}" class="px-3.5 py-2 {% if selected_date == today_date %}bg-gradient-to-r from-pink-500 to-purple-600 text-white font-black shadow-md{% else %}bg-slate-950 text-slate-300 font-bold{% endif %} rounded-xl text-xs border border-slate-700 transition">
                     Bugün
                 </a>
-                <a href="/dashboard?date={{ tomorrow_date }}" class="px-3 py-2 bg-slate-950 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs border border-slate-700 transition flex items-center gap-1">
+                <a href="/dashboard?date={{ tomorrow_date }}" class="px-3 py-2 bg-slate-950 hover:bg-slate-800 text-slate-300 font-bold rounded-xl text-xs border border-slate-700 transition flex items-center gap-1">
                     Yarın <i class="fa-solid fa-chevron-right text-[10px]"></i>
                 </a>
                 <div class="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-700">
@@ -318,8 +643,8 @@
         </div>
 
         <!-- STATS / KPI CARDS -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/80 shadow-md">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-md">
                 <div class="flex justify-between items-start mb-2">
                     <p class="text-xs font-bold text-slate-400">{% if selected_date == today_date %}Bugünkü{% else %}{{ selected_date }}{% endif %} Randevular</p>
                     <span class="w-8 h-8 rounded-lg bg-pink-500/20 text-pink-400 flex items-center justify-center text-sm font-bold"><i class="fa-solid fa-calendar-check"></i></span>
@@ -328,7 +653,7 @@
                 <p class="text-[11px] text-emerald-400 mt-1"><i class="fa-solid fa-arrow-trend-up"></i> Tümü Onaylandı</p>
             </div>
 
-            <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/80 shadow-md">
+            <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-md">
                 <div class="flex justify-between items-start mb-2">
                     <p class="text-xs font-bold text-slate-400">{% if selected_date == today_date %}Tahmini Bugünkü{% else %}{{ selected_date }}{% endif %} Ciro</p>
                     <span class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm font-bold"><i class="fa-solid fa-turkish-lira-sign"></i></span>
@@ -337,7 +662,7 @@
                 <p class="text-[11px] text-slate-400 mt-1">Gününde beklenen toplam hizmet</p>
             </div>
 
-            <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/80 shadow-md">
+            <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-md">
                 <div class="flex justify-between items-start mb-2">
                     <p class="text-xs font-bold text-slate-400">Aktif Seans Paketleri</p>
                     <span class="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center text-sm font-bold"><i class="fa-solid fa-cubes"></i></span>
@@ -346,9 +671,9 @@
                 <p class="text-[11px] text-purple-300 mt-1">Devam eden epilasyon & bakım</p>
             </div>
 
-            <div class="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/80 shadow-md">
+            <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-md">
                 <div class="flex justify-between items-start mb-2">
-                    <p class="text-xs font-bold text-slate-400">Kayıtlı Müşteri Sayısı</p>
+                    <p class="text-xs font-bold text-slate-400">Kayıtlı Portföy</p>
                     <span class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center text-sm font-bold"><i class="fa-solid fa-users"></i></span>
                 </div>
                 <h3 class="text-2xl font-black text-white">{{ total_customers }} Müşteri</h3>
@@ -356,13 +681,10 @@
             </div>
         </div>
 
-        <!-- MAIN CONTENT TABS (TODAY'S APPOINTMENTS & PACKAGES) -->
+        <!-- MAIN OPERATIONAL TABS -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
-            <!-- LEFT 2 COLS: TODAY'S APPOINTMENT TABLE & ACTION BUTTONS -->
             <div class="lg:col-span-2 space-y-8">
-                
-                <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-6 shadow-xl">
+                <div class="bg-slate-900 rounded-2xl border border-slate-800 p-6 shadow-xl">
                     <div class="flex justify-between items-center mb-6">
                         <div>
                             <h3 class="text-lg font-black text-white flex items-center gap-2">
@@ -380,7 +702,7 @@
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-xs border-collapse">
                             <thead>
-                                <tr class="text-slate-400 border-b border-slate-700/80 pb-2">
+                                <tr class="text-slate-400 border-b border-slate-800 pb-2">
                                     <th class="py-3 px-3">Saat</th>
                                     <th class="py-3 px-3">Müşteri</th>
                                     <th class="py-3 px-3">Hizmet</th>
@@ -390,16 +712,16 @@
                                     <th class="py-3 px-3 text-right">İşlemler</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-slate-700/50">
+                            <tbody class="divide-y divide-slate-800/60">
                                 {% if not today_appointments %}
                                 <tr>
                                     <td colspan="7" class="py-8 text-center text-slate-500 text-xs">
-                                        Henüz bugün için randevu bulunmuyor. Randevu eklemek için sağ üstteki butona basabilirsiniz.
+                                        Henüz bu tarihte randevu bulunmuyor. Randevu eklemek için sağ üstteki butona basabilirsiniz.
                                     </td>
                                 </tr>
                                 {% endif %}
                                 {% for app in today_appointments %}
-                                <tr class="hover:bg-slate-700/30 transition">
+                                <tr class="hover:bg-slate-800/40 transition">
                                     <td class="py-3.5 px-3 font-black text-pink-400">{{ app.appointment_time }}</td>
                                     <td class="py-3.5 px-3">
                                         <div class="font-bold text-white">{{ app.customer_name }}</div>
@@ -407,7 +729,7 @@
                                     </td>
                                     <td class="py-3.5 px-3 font-semibold text-slate-200">{{ app.service_name }}</td>
                                     <td class="py-3.5 px-3">
-                                        <span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-slate-700 text-slate-200">
+                                        <span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-slate-800 text-slate-200 border border-slate-700">
                                             {{ app.staff_name }}
                                         </span>
                                     </td>
@@ -418,7 +740,7 @@
                                             <i class="fa-brands fa-whatsapp"></i> Onaylı
                                         </span>
                                         {% else %}
-                                        <span class="bg-slate-700 text-slate-400 text-[10px] font-bold px-2 py-0.5 rounded-md">Bekliyor</span>
+                                        <span class="bg-slate-800 text-slate-400 text-[10px] font-bold px-2 py-0.5 rounded-md">Bekliyor</span>
                                         {% endif %}
                                     </td>
                                     <td class="py-3.5 px-3 text-right">
@@ -439,13 +761,13 @@
                 </div>
 
                 <!-- SEANS & PAKET TAKİP TABLOSU -->
-                <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-6 shadow-xl">
+                <div class="bg-slate-900 rounded-2xl border border-slate-800 p-6 shadow-xl">
                     <div class="flex justify-between items-center mb-6">
                         <div>
                             <h3 class="text-lg font-black text-white flex items-center gap-2">
                                 <i class="fa-solid fa-cubes text-purple-400"></i> Müşteri Seans & Paket Takibi
                             </h3>
-                            <p class="text-xs text-slate-400">Epilasyon ve medikal cilt bakım paket seans hakları</p>
+                            <p class="text-xs text-slate-400">Lazer epilasyon ve medikal cilt bakım paket seans hakları</p>
                         </div>
 
                         <button onclick="openNewPackageModal()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-extrabold rounded-xl text-xs transition shadow-md flex items-center gap-1.5">
@@ -458,7 +780,7 @@
                         <p class="text-center text-slate-500 text-xs py-4">Henüz seans paketi tanımlanmadı.</p>
                         {% endif %}
                         {% for pkg in packages %}
-                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div class="bg-slate-950/80 p-4 rounded-xl border border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                             <div>
                                 <div class="flex items-center gap-2">
                                     <h4 class="font-bold text-white text-sm">{{ pkg.customer_name }}</h4>
@@ -467,7 +789,6 @@
                                 <p class="text-xs text-purple-300 font-semibold mt-0.5">{{ pkg.package_name }}</p>
                             </div>
 
-                            <!-- Progress Bar -->
                             <div class="w-full md:w-64">
                                 <div class="flex justify-between text-xs font-extrabold mb-1">
                                     <span class="text-slate-400">Tamamlanan Seans</span>
@@ -479,7 +800,6 @@
                                 </div>
                             </div>
 
-                            <!-- Action -->
                             <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 pt-2 md:pt-0 border-slate-800">
                                 <div class="text-right">
                                     <span class="text-[10px] text-slate-400 block">Paket Tutarı</span>
@@ -499,14 +819,11 @@
                         {% endfor %}
                     </div>
                 </div>
-
             </div>
 
             <!-- RIGHT COLS: STAFF & SERVICES MANAGEMENT -->
             <div class="space-y-6">
-                
-                <!-- Staff Members List -->
-                <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-6 shadow-xl">
+                <div class="bg-slate-900 rounded-2xl border border-slate-800 p-6 shadow-xl">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-base font-black text-white flex items-center gap-2">
                             <i class="fa-solid fa-user-tie text-blue-400"></i> Ekip & Uzmanlar
@@ -516,7 +833,7 @@
 
                     <div class="space-y-3">
                         {% for st in staff %}
-                        <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-700/60 flex items-center justify-between">
+                        <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800 flex items-center justify-between">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black shadow-inner" style="background-color: {{ st.color }};">
                                     {{ st.name[0] }}
@@ -532,30 +849,29 @@
                     </div>
                 </div>
 
-                <!-- Active Salon Services list -->
-                <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-6 shadow-xl">
+                <div class="bg-slate-900 rounded-2xl border border-slate-800 p-6 shadow-xl">
                     <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
                         <div>
                             <h3 class="text-base font-black text-white flex items-center gap-2">
-                                <i class="fa-solid fa-spa text-pink-400"></i> Verilen Hizmetler & Fiyatlar
+                                <i class="fa-solid fa-spa text-pink-400"></i> Hizmetler & Fiyatlar
                             </h3>
-                            <p class="text-[11px] text-slate-400">Müşterilerinizin randevu alırken göreceği hizmet ve fiyat listesi</p>
+                            <p class="text-[11px] text-slate-400">Müşterilerin randevu alırken göreceği hizmetler</p>
                         </div>
                         <button onclick="openNewServiceModal()" class="px-3.5 py-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-extrabold text-xs rounded-xl shadow-md transition transform active:scale-95 flex items-center gap-1.5 border border-pink-400/30">
-                            <i class="fa-solid fa-circle-plus text-sm"></i> + Yeni Hizmet Ekle
+                            <i class="fa-solid fa-circle-plus text-sm"></i> + Hizmet Ekle
                         </button>
                     </div>
 
                     <div class="space-y-2.5">
                         {% for srv in services %}
-                        <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-700/60 flex justify-between items-center text-xs">
+                        <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
                             <div>
                                 <h4 class="font-bold text-slate-200">{{ srv.name }}</h4>
                                 <span class="text-[10px] text-slate-400">{{ srv.duration_minutes }} Dakika</span>
                             </div>
                             <div class="flex items-center gap-2">
                                 <span class="font-black text-emerald-400">{{ "{:,.0f}".format(srv.price).replace(',', '.') }} ₺</span>
-                                <button onclick="editService({{ srv.id }}, '{{ srv.name }}', {{ srv.duration_minutes }}, {{ srv.price }})" title="Fiyatı / Hizmeti Düzenle" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-lg border border-slate-700 transition">
+                                <button onclick="editService({{ srv.id }}, '{{ srv.name }}', {{ srv.duration_minutes }}, {{ srv.price }})" title="Fiyatı Düzenle" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-lg border border-slate-700 transition">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </button>
                                 <button onclick="deleteService({{ srv.id }}, '{{ srv.name }}')" title="Hizmeti Sil" class="p-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-bold rounded-lg border border-red-500/30 transition">
@@ -564,7 +880,7 @@
                             </div>
                         </div>
                         {% else %}
-                        <div class="text-center py-6 border border-dashed border-slate-700 rounded-xl">
+                        <div class="text-center py-6 border border-dashed border-slate-800 rounded-xl">
                             <p class="text-xs text-slate-400 font-medium mb-3">Henüz salonunuza özel bir hizmet eklenmedi.</p>
                             <button onclick="openNewServiceModal()" class="px-4 py-2 bg-pink-500/20 hover:bg-pink-500/30 text-pink-300 border border-pink-500/40 rounded-xl text-xs font-bold transition inline-flex items-center gap-1.5">
                                 <i class="fa-solid fa-plus"></i> İlk Hizmetinizi Ekle
@@ -573,12 +889,151 @@
                         {% endfor %}
                     </div>
                 </div>
-
             </div>
-
         </div>
 
     </main>
+
+    <!-- AI WHATSAPP KİŞİSELLEŞTİRİLMİŞ MESAJ ÖNİZLEME MODALI -->
+    <div id="ai-msg-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center z-50 hidden p-4">
+        <div class="bg-slate-900 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border-2 border-pink-500/50 relative text-white space-y-4">
+            <button onclick="closeAiMessageModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            
+            <div class="flex items-center gap-3 border-b border-slate-800 pb-3">
+                <div class="w-10 h-10 rounded-xl bg-pink-500/20 text-pink-400 flex items-center justify-center text-lg font-bold">
+                    <i class="fa-solid fa-robot"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-black text-white flex items-center gap-2">
+                        AI Kişiselleştirilmiş Mesaj Önizleme
+                    </h3>
+                    <p class="text-[11px] text-slate-400">Mesajı göndermeden önce inceleyebilir, dilerseniz metni düzenleyebilirsiniz.</p>
+                </div>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+                <div>
+                    <span class="text-slate-400 block text-[10px]">Alıcı Müşteri:</span>
+                    <strong id="ai-modal-cust-name" class="text-white text-sm"></strong>
+                </div>
+                <div>
+                    <span class="text-slate-400 block text-[10px]">Kampanya Türü:</span>
+                    <span id="ai-modal-camp-type" class="px-2 py-0.5 bg-pink-500/20 text-pink-300 font-extrabold rounded text-[11px] border border-pink-500/30"></span>
+                </div>
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-300 mb-1.5 text-xs">
+                    <i class="fa-solid fa-pen mr-1 text-pink-400"></i> WhatsApp Mesaj Metni (Düzenlenebilir):
+                </label>
+                <textarea id="ai-modal-textarea" rows="5" class="w-full p-3 rounded-xl bg-slate-950 border border-slate-700 text-slate-200 text-xs leading-relaxed outline-none focus:border-pink-500 font-sans"></textarea>
+            </div>
+
+            <input type="hidden" id="ai-modal-phone">
+            <input type="hidden" id="ai-modal-campaign-hidden">
+
+            <div class="flex items-center gap-3 pt-2">
+                <button type="button" onclick="closeAiMessageModal()" class="w-1/3 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs transition">
+                    Vazgeç
+                </button>
+                <button type="button" onclick="submitAndSendAiWhatsApp()" class="w-2/3 py-3 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-black text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+                    <i class="fa-brands fa-whatsapp text-base"></i> WhatsApp İle Gönder
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- "BU AY SANA NE KAZANDIRDIK?" AI ROI ATTRIBUTION RAPORU MODALI -->
+    <div id="ai-roi-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center z-50 hidden p-4">
+        <div class="bg-slate-900 rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border-2 border-emerald-500/60 relative text-white space-y-6">
+            <button onclick="closeRoiReportModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="flex items-center gap-3 border-b border-slate-800 pb-4">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-600 flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-emerald-500/20">
+                    <i class="fa-solid fa-chart-pie"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-black text-white">Bu Ay Sana Ne Kazandırdık? (AI Raporu)</h3>
+                    <p class="text-xs text-slate-400">SalonGlow AI Ciro Motoru'nun işletmenize sağladığı ölçülebilir gelir katkısı.</p>
+                </div>
+            </div>
+
+            <!-- Net Karşılaştırma Barı: Gerçekleşen Satış vs Potansiyel Fırsat -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="p-4 bg-emerald-950/40 border border-emerald-500/40 rounded-2xl space-y-1">
+                    <div class="text-[10px] font-black uppercase text-emerald-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-check-circle"></i> GERÇEKLEŞEN SATIŞ CİROSU
+                    </div>
+                    <div class="text-2xl sm:text-3xl font-black text-emerald-300">
+                        ₺{{ "{:,.0f}".format(ai_insights.monthly_roi_report.total_ai_realized_revenue).replace(',', '.') }}
+                    </div>
+                    <div class="text-[10px] text-slate-400">AI mesajları sonrası oluşan reel ciro</div>
+                </div>
+
+                <div class="p-4 bg-purple-950/40 border border-purple-500/40 rounded-2xl space-y-1">
+                    <div class="text-[10px] font-black uppercase text-purple-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-hourglass-half"></i> MASADAKİ POTANSİYEL
+                    </div>
+                    <div class="text-2xl sm:text-3xl font-black text-purple-300">
+                        ₺{{ "{:,.0f}".format(ai_insights.monthly_roi_report.total_ai_potential_revenue).replace(',', '.') }}
+                    </div>
+                    <div class="text-[10px] text-slate-400">Mesaj bekleyen toplam fırsat</div>
+                </div>
+            </div>
+
+            <!-- Kategori Kırılımları Tablosu -->
+            <div class="space-y-2.5 text-xs">
+                <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
+                    <span class="text-slate-300 flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Geri Kazanılan Müşteriler:
+                    </span>
+                    <span class="font-extrabold text-white">
+                        {{ ai_insights.monthly_roi_report.recovered_customers_count }} Müşteri (₺{{ "{:,.0f}".format(ai_insights.monthly_roi_report.recovered_revenue).replace(',', '.') }})
+                    </span>
+                </div>
+
+                <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
+                    <span class="text-slate-300 flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Yenilenen Seans Paketleri:
+                    </span>
+                    <span class="font-extrabold text-white">
+                        {{ ai_insights.monthly_roi_report.renewed_packages_count }} Paket (₺{{ "{:,.0f}".format(ai_insights.monthly_roi_report.renewed_packages_revenue).replace(',', '.') }})
+                    </span>
+                </div>
+
+                <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
+                    <span class="text-slate-300 flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-cyan-500"></span> Doldurulan Boş Randevular:
+                    </span>
+                    <span class="font-extrabold text-white">
+                        {{ ai_insights.monthly_roi_report.filled_empty_slots_count }} Koltuk (₺{{ "{:,.0f}".format(ai_insights.monthly_roi_report.filled_slots_revenue).replace(',', '.') }})
+                    </span>
+                </div>
+
+                <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
+                    <span class="text-slate-300 flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span> Ek Hizmet & Kampanya Satışları:
+                    </span>
+                    <span class="font-extrabold text-white">
+                        {{ ai_insights.monthly_roi_report.upsell_sales_count }} Satış (₺{{ "{:,.0f}".format(ai_insights.monthly_roi_report.upsell_revenue).replace(',', '.') }})
+                    </span>
+                </div>
+            </div>
+
+            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800 text-[11px] text-slate-400 flex items-center gap-2">
+                <i class="fa-solid fa-shield-halved text-emerald-400 text-sm"></i>
+                <span>SalonGlow Gelir Attribution Sistemi, AI mesajı gönderilen müşterilerin 14 gün içinde yaptığı işlemleri otomatik olarak kaydeder.</span>
+            </div>
+
+            <button onclick="closeRoiReportModal()" class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs transition">
+                Raporu Kapat
+            </button>
+        </div>
+    </div>
 
     <!-- NEW APPOINTMENT MODAL -->
     <div id="new-app-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 hidden p-4">
@@ -775,7 +1230,96 @@
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
-        document.getElementById('modal-app-date').valueAsDate = new Date();
+        var dateInput = document.getElementById('modal-app-date');
+        if (dateInput) { dateInput.valueAsDate = new Date(); }
+
+        function scrollToRadar() {
+            var el = document.getElementById('ai-ciro-radari-section');
+            if (el) { el.scrollIntoView({ behavior: 'smooth' }); }
+        }
+
+        function switchAiTab(tabName) {
+            var tabs = ['winback', 'package_renewal', 'empty_slots', 'upsell', 'ltv'];
+            tabs.forEach(function(t) {
+                var content = document.getElementById('ai-content-' + t);
+                var btn = document.getElementById('tab-btn-' + t);
+                if (content) {
+                    if (t === tabName) {
+                        content.classList.remove('hidden');
+                    } else {
+                        content.classList.add('hidden');
+                    }
+                }
+                if (btn) {
+                    if (t === tabName) {
+                        btn.className = 'ai-tab-btn px-3 py-1.5 rounded-xl font-bold bg-pink-600 text-white shadow-md';
+                    } else {
+                        btn.className = 'ai-tab-btn px-3 py-1.5 rounded-xl font-bold bg-slate-900 text-slate-400 hover:text-white';
+                    }
+                }
+            });
+        }
+
+        function openAiMessageModal(customerName, customerPhone, campaignType, suggestedMessage) {
+            document.getElementById('ai-modal-cust-name').innerText = customerName;
+            document.getElementById('ai-modal-phone').value = customerPhone;
+            document.getElementById('ai-modal-camp-type').innerText = campaignType;
+            document.getElementById('ai-modal-campaign-hidden').value = campaignType;
+            document.getElementById('ai-modal-textarea').value = suggestedMessage;
+            document.getElementById('ai-msg-modal').classList.remove('hidden');
+        }
+
+        function closeAiMessageModal() {
+            document.getElementById('ai-msg-modal').classList.add('hidden');
+        }
+
+        async function submitAndSendAiWhatsApp() {
+            var name = document.getElementById('ai-modal-cust-name').innerText;
+            var phone = document.getElementById('ai-modal-phone').value;
+            var campaignType = document.getElementById('ai-modal-campaign-hidden').value;
+            var msgText = document.getElementById('ai-modal-textarea').value.trim();
+
+            if (!phone) {
+                alert("Müşteri telefon numarası bulunamadı.");
+                return;
+            }
+
+            try {
+                await fetch('/api/ai/log-campaign', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        customer_name: name,
+                        customer_phone: phone,
+                        campaign_type: campaignType,
+                        message_text: msgText
+                    })
+                });
+            } catch (err) {
+                console.error("Kampanya loglama hatası:", err);
+            }
+
+            var cleanPhone = phone.replace(/\D/g, '');
+            if (!cleanPhone.startsWith('90')) {
+                if (cleanPhone.startsWith('0')) {
+                    cleanPhone = '90' + cleanPhone.substring(1);
+                } else {
+                    cleanPhone = '90' + cleanPhone;
+                }
+            }
+
+            var waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msgText)}`;
+            window.open(waUrl, '_blank');
+            closeAiMessageModal();
+        }
+
+        function openRoiReportModal() {
+            document.getElementById('ai-roi-modal').classList.remove('hidden');
+        }
+
+        function closeRoiReportModal() {
+            document.getElementById('ai-roi-modal').classList.add('hidden');
+        }
 
         function openNewAppointmentModal() { document.getElementById('new-app-modal').classList.remove('hidden'); }
         function closeNewAppointmentModal() { document.getElementById('new-app-modal').classList.add('hidden'); }
@@ -800,21 +1344,6 @@
             }
             var salonName = "{{ salon.name }}";
             var msg = `Merhaba ${customerName}, ${salonName} salonumuzdan bugün saat ${time} için oluşturduğunuz ${serviceName} randevunuzu hatırlatmak isteriz. Sizi bekliyoruz! 😊`;
-            var waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
-            window.open(waUrl, '_blank');
-        }
-
-        function sendWinBackWa(customerName, customerPhone) {
-            var phone = customerPhone.replace(/\D/g, '');
-            if (!phone.startsWith('90')) {
-                if (phone.startsWith('0')) {
-                    phone = '90' + phone.substring(1);
-                } else {
-                    phone = '90' + phone;
-                }
-            }
-            var salonName = "{{ salon.name }}";
-            var msg = `Merhaba ${customerName}, ${salonName} salonumuzda sizi çok özledik! ✨ Size özel tanımladığımız %20 indirimli fırsat randevunuzu oluşturmak için linkimiz: ${window.location.origin}/b/{{ salon.slug }}`;
             var waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
             window.open(waUrl, '_blank');
         }
@@ -884,21 +1413,6 @@
             } else {
                 alert("İşlem sırasında hata oluştu.");
             }
-        }
-
-        function sendBirthdayWa(customerName, customerPhone) {
-            var phone = customerPhone.replace(/\D/g, '');
-            if (!phone.startsWith('90')) {
-                if (phone.startsWith('0')) {
-                    phone = '90' + phone.substring(1);
-                } else {
-                    phone = '90' + phone;
-                }
-            }
-            var salonName = "{{ salon.name }}";
-            var msg = `İyi ki doğdunuz ${customerName}! 🥳 ${salonName} ailemiz olarak yeni yaşınızı kutlarız! Doğum gününüze özel tüm fön, cilt bakımı ve işlemlerde %25 İndirim Hediyeniz tanımlandı. Randevunuzu hemen almak için linkimiz: ${window.location.origin}/b/{{ salon.slug }}`;
-            var waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
-            window.open(waUrl, '_blank');
         }
 
         function sendReferralWa() {
