@@ -259,6 +259,9 @@
                         <button onclick="switchAiTab('upsell')" id="tab-btn-upsell" class="ai-tab-btn px-3 py-1.5 rounded-xl font-bold bg-slate-900 text-slate-400 hover:text-white">
                             ✨ Ek Hizmet / Upsell ({{ ai_insights.categories.upsell.opportunity_count }})
                         </button>
+                        <button onclick="switchAiTab('campaigns_birthdays')" id="tab-btn-campaigns_birthdays" class="ai-tab-btn px-3 py-1.5 rounded-xl font-bold bg-slate-900 text-slate-400 hover:text-white">
+                            🎂 Doğum Günü / VIP ({{ ai_insights.categories.campaigns_birthdays.opportunity_count }})
+                        </button>
                         <button onclick="switchAiTab('ltv')" id="tab-btn-ltv" class="ai-tab-btn px-3 py-1.5 rounded-xl font-bold bg-slate-900 text-slate-400 hover:text-white">
                             💎 Yüksek Değerli Müşteriler
                         </button>
@@ -442,7 +445,49 @@
                         {% endfor %}
                     </div>
 
-                    <!-- 5. SEKME İÇERİĞİ: YÜKSEK DEĞERLİ MÜŞTERİLER (LTV) -->
+                    <!-- 5. SEKME İÇERİĞİ: DOĞUM GÜNÜ & VIP KAMPANYALARI -->
+                    <div id="ai-content-campaigns_birthdays" class="ai-tab-content space-y-3 hidden">
+                        <div class="flex justify-between items-center text-xs text-slate-400 mb-1">
+                            <span class="font-bold text-white">🎂 DOĞUM GÜNÜ & SADAKAT KUTLAMA RADARI</span>
+                            <span>Müşterilerinize özel gün hediyeleri sunarak bağları güçlendirin</span>
+                        </div>
+
+                        {% for b in ai_insights.categories.campaigns_birthdays.customers %}
+                        <div class="p-4 bg-slate-950/70 border border-emerald-500/30 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-emerald-500/60 transition">
+                            <div class="space-y-1.5 flex-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-extrabold text-sm text-white">{{ b.customer_name }}</span>
+                                    <span class="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded border border-emerald-500/30 flex items-center gap-1">
+                                        <i class="fa-solid fa-cake-candles text-[9px]"></i> {{ b.event }}
+                                    </span>
+                                    <span class="text-xs font-black text-emerald-400">
+                                        +₺{{ "{:,.0f}".format(b.potential_revenue).replace(',', '.') }}
+                                    </span>
+                                </div>
+                                <p class="text-xs text-slate-300 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-gift text-emerald-400"></i>
+                                    <span>Özel Teklif: <strong class="text-white">{{ b.gift_offer }}</strong></span>
+                                </p>
+                            </div>
+
+                            <button 
+                                data-customer="{{ b.customer_name | forceescape }}"
+                                data-phone="{{ b.customer_phone | forceescape }}"
+                                data-type="Doğum Günü"
+                                data-msg="{{ b.suggested_wa_msg | forceescape }}"
+                                onclick="handleAiModalClick(this)"
+                                class="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs rounded-xl transition shadow-md flex items-center justify-center gap-1.5 shrink-0">
+                                <i class="fa-brands fa-whatsapp text-sm"></i> KUTLAMA TEKLİFİ GÖNDER
+                            </button>
+                        </div>
+                        {% else %}
+                        <div class="p-6 bg-slate-950/50 rounded-2xl text-center border border-slate-800 text-xs text-slate-400">
+                            Şu anda yaklaşan doğum günü veya özel VIP kampanya teklifi bulunmuyor.
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- 6. SEKME İÇERİĞİ: YÜKSEK DEĞERLİ MÜŞTERİLER (LTV) -->
                     <div id="ai-content-ltv" class="ai-tab-content space-y-3 hidden">
                         <div class="flex justify-between items-center text-xs text-slate-400 mb-1">
                             <span class="font-bold text-white">💎 EN YÜKSEK DEĞERLİ MÜŞTERİLER (LTV SIRALAMASI)</span>
@@ -1308,7 +1353,7 @@
 
         // AI Radar Sekme Değiştirici
         function switchAiTab(tabName) {
-            var tabs = ['winback', 'package_renewal', 'empty_slots', 'upsell', 'ltv'];
+            var tabs = ['winback', 'package_renewal', 'empty_slots', 'upsell', 'campaigns_birthdays', 'ltv'];
             tabs.forEach(function(t) {
                 var content = document.getElementById('ai-content-' + t);
                 var btn = document.getElementById('tab-btn-' + t);
