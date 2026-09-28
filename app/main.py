@@ -27,6 +27,7 @@ from app.database import (
     delete_salon_admin,
     update_salon_google_maps,
     toggle_service_flash_deal,
+    log_ai_campaign_interaction,
     get_db
 )
 from app.email_service import send_password_reset_email
@@ -88,6 +89,14 @@ class FlashDealRequest(BaseModel):
     service_id: int
     is_flash_deal: bool
     discount_percent: int = 20
+
+class LogAICampaignRequest(BaseModel):
+    salon_id: Optional[int] = None
+    customer_name: str
+    customer_phone: str
+    campaign_type: str
+    offer_details: Optional[str] = ""
+    message_text: Optional[str] = ""
 
 class AdminSubscriptionUpdateRequest(BaseModel):
     salon_id: int
@@ -334,6 +343,19 @@ async def api_service_flash_deal(request: Request, req: FlashDealRequest):
     if not salon_id:
         return {"status": "error", "message": "Oturum bulunamadı"}
     toggle_service_flash_deal(req.service_id, salon_id, req.is_flash_deal, req.discount_percent)
+    return {"status": "success"}
+
+@app.post("/api/ai/log-campaign")
+async def api_log_ai_campaign(request: Request, req: LogAICampaignRequest):
+    salon_id = req.salon_id or get_session_salon_id(request) or 1
+    log_ai_campaign_interaction(
+        salon_id=salon_id,
+        customer_name=req.customer_name,
+        customer_phone=req.customer_phone,
+        campaign_type=req.campaign_type,
+        offer_details=req.offer_details or "",
+        message_text=req.message_text or ""
+    )
     return {"status": "success"}
 
 # SUPER ADMIN ROUTES
