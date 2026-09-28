@@ -4,6 +4,7 @@ import re
 import hashlib
 import random
 from datetime import datetime, timedelta
+from app.ai_engine import get_salon_ai_insights
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
@@ -144,7 +145,7 @@ def init_db():
     conn = get_db()
     cursor = conn.cursor()
     
-    # Salons table
+    # 1. Salons table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS salons (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -162,7 +163,7 @@ def init_db():
         )
     """)
     
-    # Password Resets table
+    # 2. Password Resets table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS password_resets (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -173,7 +174,7 @@ def init_db():
         )
     """)
 
-    # Staff table
+    # 3. Staff table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS staff (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -184,7 +185,7 @@ def init_db():
         )
     """)
 
-    # Services table
+    # 4. Services table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS services (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -198,7 +199,7 @@ def init_db():
         )
     """)
 
-    # Appointments table
+    # 5. Appointments table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS appointments (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -216,7 +217,7 @@ def init_db():
         )
     """)
 
-    # Customer Packages table
+    # 6. Customer Packages table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS customer_packages (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -232,20 +233,103 @@ def init_db():
         )
     """)
 
+    # 7. AI Ciro Motoru Yeni Tabloları
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS ai_opportunities (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            salon_id INTEGER NOT NULL,
+            customer_name TEXT,
+            customer_phone TEXT,
+            category TEXT NOT NULL,
+            title TEXT NOT NULL,
+            description TEXT,
+            potential_revenue REAL NOT NULL,
+            priority TEXT DEFAULT 'orta',
+            status TEXT DEFAULT 'OPEN',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS customer_scores (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            salon_id INTEGER NOT NULL,
+            customer_name TEXT NOT NULL,
+            customer_phone TEXT NOT NULL,
+            visit_count INTEGER DEFAULT 1,
+            avg_spend REAL DEFAULT 0,
+            last_visit_date TEXT,
+            visit_interval_days INTEGER DEFAULT 30,
+            ltv_annual REAL DEFAULT 0,
+            churn_risk TEXT DEFAULT 'düşük',
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS ai_recommendations (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            salon_id INTEGER NOT NULL,
+            recommendation_type TEXT NOT NULL,
+            target_customer TEXT,
+            target_phone TEXT,
+            suggested_action TEXT NOT NULL,
+            potential_revenue REAL NOT NULL,
+            priority TEXT DEFAULT 'orta',
+            is_active INTEGER DEFAULT 1,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS recovery_campaigns (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            salon_id INTEGER NOT NULL,
+            customer_name TEXT NOT NULL,
+            customer_phone TEXT NOT NULL,
+            campaign_type TEXT NOT NULL,
+            offer_details TEXT,
+            message_text TEXT,
+            message_sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            is_converted INTEGER DEFAULT 0,
+            converted_amount REAL DEFAULT 0,
+            converted_at TIMESTAMP
+        )
+    """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS revenue_attribution (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            salon_id INTEGER NOT NULL,
+            customer_name TEXT NOT NULL,
+            customer_phone TEXT NOT NULL,
+            campaign_type TEXT NOT NULL,
+            attribution_type TEXT NOT NULL,
+            actual_revenue REAL NOT NULL,
+            appointment_id INTEGER,
+            package_id INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
     conn.commit()
 
-    # Ensure created_at column exists in salons table
     try:
         cursor.execute("ALTER TABLE salons ADD COLUMN created_at TEXT")
         conn.commit()
     except Exception:
         conn.rollback()
     
-    # Seed default demo salon if empty
     cursor.execute("SELECT count(*) FROM salons")
     if cursor.fetchone()[0] == 0:
         seed_demo_salon(cursor)
         conn.commit()
+    else:
+        cursor.execute("SELECT count(*) FROM appointments WHERE salon_id = 1 AND customer_name LIKE '%Ayşe Yılmaz%'")
+        if cursor.fetchone()[0] == 0:
+            enrich_demo_salon(cursor, salon_id=1)
+            cursor.execute("UPDATE customer_packages SET completed_sessions = 7 WHERE salon_id = 1")
+            conn.commit()
 
     conn.close()
 
@@ -271,29 +355,61 @@ def seed_demo_salon(cursor):
         (salon_id, 'Hydrafacial Derin Cilt Bakımı', 60, 1200.0, 'Cilt Bakımı'),
         (salon_id, 'Buz Lazer Epilasyon (Tüm Vücut)', 45, 1800.0, 'Lazer Epilasyon'),
         (salon_id, 'Profesyonel Saç Kesim & Fön', 45, 650.0, 'Saç Tasarım'),
-        (salon_id, 'Protez Tırnak & Kalıcı Oje', 60, 850.0, 'Tırnak & Manikür')
+        (salon_id, 'Protez Tırnak & Kalıcı Oje', 60, 850.0, 'Tırnak & Manikür'),
+        (salon_id, 'Medikal Pedikür & Spa', 45, 750.0, 'Tırnak & Manikür'),
+        (salon_id, 'Keratin Saç Botoksu & Bakım', 60, 1500.0, 'Saç Tasarım')
     ]
     cursor.executemany("INSERT INTO services (salon_id, name, duration_minutes, price, category) VALUES (?, ?, ?, ?, ?)", services)
 
-    # Demo Appointments
-    today_str = datetime.now().strftime("%Y-%m-%d")
-    demo_apps = [
-        (salon_id, 'Selin Demir', '0533 111 2233', 'Ayşe Uzun', 'Hydrafacial Derin Cilt Bakımı', today_str, '10:00', 1200.0, 'APPROVED', 1, 'Hassas cilt, maske uygulandı.'),
-        (salon_id, 'Elif Kaya', '0544 222 3344', 'Merve Kaya', 'Buz Lazer Epilasyon (Tüm Vücut)', today_str, '11:30', 1800.0, 'APPROVED', 1, '4. Seans uygulaması yapıldı.')
-    ]
-    cursor.executemany("""
-        INSERT INTO appointments (salon_id, customer_name, customer_phone, staff_name, service_name, appointment_date, appointment_time, price, status, wa_sent, notes)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, demo_apps)
-
     # Demo Packages
     demo_packages = [
-        (salon_id, 'Elif Kaya', '0544 222 3344', '8 Seans Buz Lazer Paketi', 8, 4, 9600.0, 9600.0, '2026-08-15')
+        (salon_id, 'Elif Kaya', '0544 222 3344', '8 Seans Buz Lazer Paketi', 8, 7, 9600.0, 9600.0, '2026-07-15'),
+        (salon_id, 'Büşra Yıldız', '0535 777 8899', '6 Seans Cilt Yenileme Paketi', 6, 6, 6000.0, 6000.0, '2026-06-10')
     ]
     cursor.executemany("""
         INSERT INTO customer_packages (salon_id, customer_name, customer_phone, package_name, total_sessions, completed_sessions, total_price, paid_amount, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, demo_packages)
+
+    enrich_demo_salon(cursor, salon_id=salon_id)
+
+def enrich_demo_salon(cursor, salon_id=1):
+    """Demo salona gerçekçi geçmiş randevu verileri ekler (AI Ciro Radarı analizi için)"""
+    today = datetime.now()
+    d_today = today.strftime("%Y-%m-%d")
+    d_15 = (today - timedelta(days=15)).strftime("%Y-%m-%d")
+    d_30 = (today - timedelta(days=30)).strftime("%Y-%m-%d")
+    d_40 = (today - timedelta(days=40)).strftime("%Y-%m-%d")
+    d_45 = (today - timedelta(days=45)).strftime("%Y-%m-%d")
+    d_65 = (today - timedelta(days=65)).strftime("%Y-%m-%d")
+    d_67 = (today - timedelta(days=67)).strftime("%Y-%m-%d")
+    d_102 = (today - timedelta(days=102)).strftime("%Y-%m-%d")
+
+    demo_apps = [
+        # Bugünün Randevuları
+        (salon_id, 'Selin Demir', '0533 111 2233', 'Ayşe Uzun', 'Hydrafacial Derin Cilt Bakımı', d_today, '10:00', 1200.0, 'APPROVED', 1, 'Hassas cilt bakımı.'),
+        (salon_id, 'Elif Kaya', '0544 222 3344', 'Merve Kaya', 'Buz Lazer Epilasyon (Tüm Vücut)', d_today, '11:30', 1800.0, 'APPROVED', 1, '7. seans.'),
+        
+        # Ayşe Yılmaz: 102 gün önce ve 67 gün önce geldi (Normal aralık 35 gün, son ziyaret 67 gün önce!)
+        (salon_id, 'Ayşe Yılmaz', '0538 111 2233', 'Mehmet Can', 'Profesyonel Saç Kesim & Fön', d_102, '14:00', 1850.0, 'APPROVED', 1, 'İlk ziyaret.'),
+        (salon_id, 'Ayşe Yılmaz', '0538 111 2233', 'Mehmet Can', 'Profesyonel Saç Kesim & Fön', d_67, '14:30', 1850.0, 'APPROVED', 1, 'Düzenli kesim & keratin.'),
+        
+        # Selin Demir geçmiş randevuları
+        (salon_id, 'Selin Demir', '0533 111 2233', 'Ayşe Uzun', 'Hydrafacial Derin Cilt Bakımı', d_65, '10:00', 1200.0, 'APPROVED', 1, 'Rutin bakım.'),
+        (salon_id, 'Selin Demir', '0533 111 2233', 'Ayşe Uzun', 'Hydrafacial Derin Cilt Bakımı', d_40, '10:30', 1200.0, 'APPROVED', 1, 'Kontrol seansı.'),
+
+        # Zeynep Yılmaz: Manikür almış, pedikür almamış (Upsell!)
+        (salon_id, 'Zeynep Yılmaz', '0532 555 1234', 'Zeynep Hanım', 'Protez Tırnak & Kalıcı Oje', d_45, '13:00', 850.0, 'APPROVED', 1, 'Protez tırnak.'),
+        (salon_id, 'Zeynep Yılmaz', '0532 555 1234', 'Zeynep Hanım', 'Protez Tırnak & Kalıcı Oje', d_15, '13:30', 850.0, 'APPROVED', 1, 'Kalıcı oje yenileme.'),
+
+        # Büşra Yıldız
+        (salon_id, 'Büşra Yıldız', '0535 777 8899', 'Ayşe Uzun', 'Hydrafacial Derin Cilt Bakımı', d_30, '16:00', 1200.0, 'APPROVED', 1, 'Cilt temizliği.')
+    ]
+    
+    cursor.executemany("""
+        INSERT INTO appointments (salon_id, customer_name, customer_phone, staff_name, service_name, appointment_date, appointment_time, price, status, wa_sent, notes)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, demo_apps)
 
 def register_new_salon(name, owner_name, email, password, phone, city):
     conn = get_db()
@@ -318,14 +434,12 @@ def register_new_salon(name, owner_name, email, password, phone, city):
     """, (name, slug, owner_name, email, pass_hash, phone, city, now_str))
     salon_id = cursor.lastrowid
     
-    # Add starter staff for new salon
     starter_staff = [
         (salon_id, owner_name, 'Baş Uzman & Kurucu', '#ec4899'),
         (salon_id, 'Yardımcı Uzman', 'Güzellik & Estetik Uzmanı', '#8b5cf6')
     ]
     cursor.executemany("INSERT INTO staff (salon_id, name, title, color) VALUES (?, ?, ?, ?)", starter_staff)
     
-    # Add starter services for new salon
     starter_services = [
         (salon_id, 'Cilt Bakımı & Maske', 60, 1000.0, 'Cilt Bakımı'),
         (salon_id, 'Lazer Epilasyon Seansı', 45, 1500.0, 'Lazer Epilasyon'),
@@ -355,7 +469,7 @@ def create_password_reset_code(email):
     row = cursor.fetchone()
     if not row:
         conn.close()
-        return None  # Email not registered
+        return None
         
     code = f"{random.randint(100000, 999999)}"
     expires_at = (datetime.now() + timedelta(minutes=15)).strftime("%Y-%m-%d %H:%M:%S")
@@ -386,9 +500,7 @@ def verify_and_reset_password(email, code, new_password):
     reset_id = row[0]
     new_pass_hash = hash_password(new_password)
     
-    # Update salon password
     cursor.execute("UPDATE salons SET password_hash = ? WHERE email = ?", (new_pass_hash, email))
-    # Mark reset code as used
     cursor.execute("UPDATE password_resets SET is_used = 1 WHERE id = ?", (reset_id,))
     
     conn.commit()
@@ -441,60 +553,10 @@ def get_salon_dashboard_data(salon_id, target_date=None):
     cursor.execute("SELECT * FROM customer_packages WHERE salon_id = ? ORDER BY id DESC", (salon_id,))
     packages = [dict(r) for r in cursor.fetchall()]
 
-    # Detect inactive/lost customers (who last visited 20+ days ago)
-    cutoff_date = (datetime.now() - timedelta(days=20)).strftime("%Y-%m-%d")
-    try:
-        cursor.execute("""
-            SELECT MAX(customer_name) as customer_name, customer_phone, MAX(appointment_date) as last_date, COUNT(*) as visit_count
-            FROM appointments
-            WHERE salon_id = ?
-            GROUP BY customer_phone
-            HAVING MAX(appointment_date) <= ?
-            ORDER BY last_date ASC
-            LIMIT 10
-        """, (salon_id, cutoff_date))
-        lost_customers = [dict(r) for r in cursor.fetchall()]
-    except Exception:
-        conn.rollback()
-        lost_customers = []
+    # AI CİRO MOTORU ANALİZİ
+    ai_insights = get_salon_ai_insights(conn, salon_id)
 
-    if not lost_customers and salon_id == 1:
-        lost_customers = [
-            {"customer_name": "Selin Demir", "customer_phone": "0533 111 2233", "last_date": "2026-08-10", "visit_count": 3},
-            {"customer_name": "Elif Kaya", "customer_phone": "0544 222 3344", "last_date": "2026-08-01", "visit_count": 5},
-            {"customer_name": "Deniz Arslan", "customer_phone": "0555 333 4455", "last_date": "2026-07-25", "visit_count": 2}
-        ]
-
-    if salon_id == 1:
-        birthday_customers = [
-            {"customer_name": "Zeynep Yılmaz", "customer_phone": "0532 555 1234", "birth_date": "25 Eylül (Bugün 🥳)", "suggested_gift": "%25 İndirimli Fön & Cilt Bakımı"},
-            {"customer_name": "Merve Öztürk", "customer_phone": "0542 333 4455", "birth_date": "28 Eylül", "suggested_gift": "%20 İndirimli Lazer Seansı"},
-            {"customer_name": "Büşra Yıldız", "customer_phone": "0535 777 8899", "birth_date": "30 Eylül", "suggested_gift": "Hediye Manikür & Kalıcı Oje"}
-        ]
-    else:
-        try:
-            cursor.execute("""
-                SELECT DISTINCT customer_name, customer_phone
-                FROM appointments
-                WHERE salon_id = ?
-                LIMIT 5
-            """, (salon_id,))
-            real_custs = cursor.fetchall()
-            birthday_customers = []
-            for c in real_custs:
-                birthday_customers.append({
-                    "customer_name": c["customer_name"],
-                    "customer_phone": c["customer_phone"],
-                    "birth_date": "Yaklaşan Doğum Günü 🎉",
-                    "suggested_gift": "%20 Özel İndirim Hediyesi"
-                })
-        except Exception:
-            conn.rollback()
-            birthday_customers = []
-
-    conn.close()
-
-    # Check 3-day (72-hour) trial expiration
+    # 3 Günlük PRO Deneme Süresi Kontrolü
     created_at_str = salon.get('created_at')
     is_expired = False
     days_left = 3
@@ -513,7 +575,9 @@ def get_salon_dashboard_data(salon_id, target_date=None):
                 is_expired = True
         except Exception:
             pass
-    
+
+    conn.close()
+
     return {
         "selected_date": selected_date,
         "yesterday_date": yesterday_date,
@@ -524,8 +588,6 @@ def get_salon_dashboard_data(salon_id, target_date=None):
         "total_customers": total_customers,
         "active_packages_count": active_packages_count,
         "today_appointments": today_appointments,
-        "lost_customers": lost_customers,
-        "birthday_customers": birthday_customers,
         "staff": staff,
         "services": services,
         "packages": packages,
@@ -533,8 +595,59 @@ def get_salon_dashboard_data(salon_id, target_date=None):
         "is_expired": is_expired,
         "days_left": days_left,
         "hours_left": hours_left,
-        "total_hours_left": total_hours_left
+        "total_hours_left": total_hours_left,
+        "ai_insights": ai_insights
     }
+
+def check_and_attribute_revenue(conn, salon_id, customer_phone, revenue_amount, appointment_id=None, package_id=None):
+    """
+    Gelir Attribution Sistemi:
+    Müşteriye AI aracılığıyla son 14 gün içinde mesaj gönderilmişse
+    bu yeni satışı/randevuyu AI tarafından kazanılmış ciro olarak kaydeder.
+    """
+    cursor = conn.cursor()
+    try:
+        cutoff = (datetime.now() - timedelta(days=14)).strftime("%Y-%m-%d %H:%M:%S")
+        cursor.execute("""
+            SELECT id, customer_name, campaign_type 
+            FROM recovery_campaigns 
+            WHERE salon_id = ? AND customer_phone = ? AND message_sent_at >= ?
+            ORDER BY id DESC LIMIT 1
+        """, (salon_id, customer_phone, cutoff))
+        camp = cursor.fetchone()
+        if camp:
+            camp_id = camp[0]
+            c_name = camp[1]
+            camp_type = camp[2]
+            now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            cursor.execute("""
+                UPDATE recovery_campaigns 
+                SET is_converted = 1, converted_amount = ?, converted_at = ?
+                WHERE id = ?
+            """, (revenue_amount, now_str, camp_id))
+            cursor.execute("""
+                INSERT INTO revenue_attribution (salon_id, customer_name, customer_phone, campaign_type, attribution_type, actual_revenue, appointment_id, package_id, created_at)
+                VALUES (?, ?, ?, ?, 'AI_CONVERSION', ?, ?, ?, ?)
+            """, (salon_id, c_name, customer_phone, camp_type, revenue_amount, appointment_id, package_id, now_str))
+            conn.commit()
+    except Exception:
+        conn.rollback()
+
+def log_ai_campaign_interaction(salon_id, customer_name, customer_phone, campaign_type, offer_details="", message_text=""):
+    """Kullanıcı AI önerisiyle WhatsApp mesajı gönderdiğinde kampanyayı kaydeder"""
+    conn = get_db()
+    cursor = conn.cursor()
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    try:
+        cursor.execute("""
+            INSERT INTO recovery_campaigns (salon_id, customer_name, customer_phone, campaign_type, offer_details, message_text, message_sent_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (salon_id, customer_name, customer_phone, campaign_type, offer_details, message_text, now_str))
+        conn.commit()
+    except Exception:
+        conn.rollback()
+    finally:
+        conn.close()
 
 def add_new_appointment(salon_id, customer_name, customer_phone, staff_name, service_name, appointment_date, appointment_time, price, notes=""):
     conn = get_db()
@@ -545,6 +658,9 @@ def add_new_appointment(salon_id, customer_name, customer_phone, staff_name, ser
     """, (salon_id, customer_name, customer_phone, staff_name, service_name, appointment_date, appointment_time, price, notes))
     conn.commit()
     new_id = cursor.lastrowid
+    
+    check_and_attribute_revenue(conn, salon_id, customer_phone, price, appointment_id=new_id)
+
     conn.close()
     return new_id
 
@@ -564,6 +680,10 @@ def add_new_package(salon_id, customer_name, customer_phone, package_name, total
         VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?)
     """, (salon_id, customer_name, customer_phone, package_name, total_sessions, total_price, paid_amount, today_str))
     conn.commit()
+    new_pkg_id = cursor.lastrowid
+
+    check_and_attribute_revenue(conn, salon_id, customer_phone, total_price, package_id=new_pkg_id)
+
     conn.close()
 
 def increment_package_session(package_id):
@@ -640,7 +760,7 @@ def get_all_salons_admin():
                 total_hours_left = int(total_seconds_left / 3600)
                 days_left = int(total_hours_left / 24)
                 hours_left = total_hours_left % 24
-                if elapsed_seconds <= 172800:  # 48 hours
+                if elapsed_seconds <= 172800:
                     is_new_user = True
                 if 'Deneme' in s.get('subscription_plan', '') and elapsed_seconds >= 259200:
                     is_expired = True
@@ -659,7 +779,6 @@ def update_salon_subscription(salon_id, new_plan):
     conn = get_db()
     cursor = conn.cursor()
     
-    # Safely ensure created_at column exists if older DB schema
     try:
         cursor.execute("ALTER TABLE salons ADD COLUMN created_at TEXT")
         conn.commit()
@@ -686,6 +805,8 @@ def delete_salon_admin(salon_id):
     cursor.execute("DELETE FROM customer_packages WHERE salon_id = ?", (salon_id,))
     cursor.execute("DELETE FROM staff WHERE salon_id = ?", (salon_id,))
     cursor.execute("DELETE FROM services WHERE salon_id = ?", (salon_id,))
+    cursor.execute("DELETE FROM recovery_campaigns WHERE salon_id = ?", (salon_id,))
+    cursor.execute("DELETE FROM revenue_attribution WHERE salon_id = ?", (salon_id,))
     cursor.execute("DELETE FROM salons WHERE id = ?", (salon_id,))
     conn.commit()
     conn.close()
