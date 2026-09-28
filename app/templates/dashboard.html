@@ -102,12 +102,16 @@
             </button>
         </div>
 
-        <!-- 1. YENİ ANA BÖLÜM: AI CİRO RADARI (HERO SECTION) -->
+        <!-- ========================================================================= -->
+        <!-- 1. YENİ ANA BÖLÜM: AI CİRO RADARI (HERO SECTION)                           -->
+        <!-- ========================================================================= -->
         <div id="ai-ciro-radari-section" class="bg-gradient-to-br from-slate-900 via-slate-900 to-purple-950/50 border-2 border-pink-500/70 rounded-3xl p-6 sm:p-8 ai-glow-border relative overflow-hidden space-y-6">
             
+            <!-- Arka Plan Efekti -->
             <div class="absolute -right-24 -top-24 w-80 h-80 bg-pink-500/10 rounded-full blur-3xl pointer-events-none"></div>
             <div class="absolute -left-24 -bottom-24 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
+            <!-- AI Radar Header & Masada Bekleyen Para -->
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 pb-6 border-b border-slate-800 relative z-10">
                 <div>
                     <div class="flex items-center gap-2 mb-1">
@@ -138,6 +142,7 @@
             </div>
 
             {% if not ai_insights.has_enough_data %}
+            <!-- Veri Yetersiz Bilgilendirmesi (Gerçek Veri İlkesi) -->
             <div class="p-6 bg-slate-950/70 border border-dashed border-slate-700 rounded-2xl text-center space-y-2">
                 <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto text-xl">
                     <i class="fa-solid fa-database"></i>
@@ -149,8 +154,10 @@
             </div>
             {% else %}
 
-            <!-- 5 FIRSAT KATEGORİSİ KARTLARI -->
+            <!-- 5 FIRSAT KATEGORİSİ KARTLARI (ÖZET BAR) -->
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5 relative z-10">
+                
+                <!-- Kategori 1: Geri Kazanım -->
                 <button onclick="switchAiTab('winback')" class="ai-cat-card p-4 rounded-2xl bg-slate-950/70 border border-rose-500/40 hover:border-rose-400 hover:bg-slate-900 transition text-left space-y-2 group">
                     <div class="flex justify-between items-center">
                         <span class="text-xs font-black text-rose-400 flex items-center gap-1.5">
@@ -166,6 +173,7 @@
                     </div>
                 </button>
 
+                <!-- Kategori 2: Paket Yenileme -->
                 <button onclick="switchAiTab('package_renewal')" class="ai-cat-card p-4 rounded-2xl bg-slate-950/70 border border-amber-500/40 hover:border-amber-400 hover:bg-slate-900 transition text-left space-y-2 group">
                     <div class="flex justify-between items-center">
                         <span class="text-xs font-black text-amber-400 flex items-center gap-1.5">
@@ -181,6 +189,7 @@
                     </div>
                 </button>
 
+                <!-- Kategori 3: Boş Koltuk -->
                 <button onclick="switchAiTab('empty_slots')" class="ai-cat-card p-4 rounded-2xl bg-slate-950/70 border border-cyan-500/40 hover:border-cyan-400 hover:bg-slate-900 transition text-left space-y-2 group">
                     <div class="flex justify-between items-center">
                         <span class="text-xs font-black text-cyan-400 flex items-center gap-1.5">
@@ -196,6 +205,7 @@
                     </div>
                 </button>
 
+                <!-- Kategori 4: Ek Hizmet / Upsell -->
                 <button onclick="switchAiTab('upsell')" class="ai-cat-card p-4 rounded-2xl bg-slate-950/70 border border-purple-500/40 hover:border-purple-400 hover:bg-slate-900 transition text-left space-y-2 group">
                     <div class="flex justify-between items-center">
                         <span class="text-xs font-black text-purple-400 flex items-center gap-1.5">
@@ -211,6 +221,7 @@
                     </div>
                 </button>
 
+                <!-- Kategori 5: Doğum Günü & Sadakat -->
                 <button onclick="switchAiTab('campaigns_birthdays')" class="ai-cat-card p-4 rounded-2xl bg-slate-950/70 border border-emerald-500/40 hover:border-emerald-400 hover:bg-slate-900 transition text-left space-y-2 group">
                     <div class="flex justify-between items-center">
                         <span class="text-xs font-black text-emerald-400 flex items-center gap-1.5">
@@ -225,11 +236,16 @@
                         <div class="text-[11px] text-slate-400">{{ ai_insights.categories.campaigns_birthdays.customer_count }} Kutlama</div>
                     </div>
                 </button>
+
             </div>
 
-            <!-- DETAYLI RADAR SEKMELERİ & BUGÜN YAPILMASI GEREKENLER -->
+            <!-- DETAYLI RADAR SEKMELERİ & BUGÜN YAPILMASI GEREKENLER (2 KOLONLU MODERN DÜZEN) -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2 relative z-10">
+                
+                <!-- SOL 2 KOLON: SEÇİLİ RADARIN DETAY LİSTESİ -->
                 <div class="lg:col-span-2 space-y-4">
+                    
+                    <!-- Sekme Butonları -->
                     <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800 text-xs">
                         <button onclick="switchAiTab('winback')" id="tab-btn-winback" class="ai-tab-btn px-3 py-1.5 rounded-xl font-bold bg-pink-600 text-white shadow-md">
                             🔥 Geri Kazanım Fırsatları ({{ ai_insights.categories.winback.opportunity_count }})
@@ -278,7 +294,13 @@
                                 </div>
                             </div>
 
-                            <button onclick="openAiMessageModal('{{ c.customer_name }}', '{{ c.customer_phone }}', 'Win-Back', {{ c.suggested_wa_msg | tojson }})" class="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-extrabold text-xs rounded-xl transition shadow-md flex items-center justify-center gap-1.5 shrink-0">
+                            <button 
+                                data-customer="{{ c.customer_name | forceescape }}"
+                                data-phone="{{ c.customer_phone | forceescape }}"
+                                data-type="Win-Back"
+                                data-msg="{{ c.suggested_wa_msg | forceescape }}"
+                                onclick="handleAiModalClick(this)"
+                                class="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-extrabold text-xs rounded-xl transition shadow-md flex items-center justify-center gap-1.5 shrink-0">
                                 <i class="fa-brands fa-whatsapp text-sm"></i> GERİ KAZAN
                             </button>
                         </div>
@@ -314,7 +336,13 @@
                                 </div>
                             </div>
 
-                            <button onclick="openAiMessageModal('{{ p.customer_name }}', '{{ p.customer_phone }}', 'Paket Yenileme', {{ p.suggested_wa_msg | tojson }})" class="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-extrabold text-xs rounded-xl transition shadow-md flex items-center justify-center gap-1.5 shrink-0">
+                            <button 
+                                data-customer="{{ p.customer_name | forceescape }}"
+                                data-phone="{{ p.customer_phone | forceescape }}"
+                                data-type="Paket Yenileme"
+                                data-msg="{{ p.suggested_wa_msg | forceescape }}"
+                                onclick="handleAiModalClick(this)"
+                                class="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-extrabold text-xs rounded-xl transition shadow-md flex items-center justify-center gap-1.5 shrink-0">
                                 <i class="fa-brands fa-whatsapp text-sm"></i> WHATSAPP MESAJI OLUŞTUR
                             </button>
                         </div>
@@ -355,7 +383,13 @@
                                             <div class="font-bold text-white">{{ mc.customer_name }}</div>
                                             <div class="text-[10px] text-slate-400">{{ mc.preferred_service }}</div>
                                         </div>
-                                        <button onclick="openAiMessageModal('{{ mc.customer_name }}', '{{ mc.customer_phone }}', 'Boş Koltuk', {{ mc.suggested_wa_msg | tojson }})" class="px-2 py-1 bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold text-[11px] rounded-lg transition shadow-sm">
+                                        <button 
+                                            data-customer="{{ mc.customer_name | forceescape }}"
+                                            data-phone="{{ mc.customer_phone | forceescape }}"
+                                            data-type="Boş Koltuk"
+                                            data-msg="{{ mc.suggested_wa_msg | forceescape }}"
+                                            onclick="handleAiModalClick(this)"
+                                            class="px-2 py-1 bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold text-[11px] rounded-lg transition shadow-sm">
                                             TEKLİF GÖNDER
                                         </button>
                                     </div>
@@ -395,7 +429,13 @@
                                 </p>
                             </div>
 
-                            <button onclick="openAiMessageModal('{{ up.customer_name }}', '{{ up.customer_phone }}', 'Ek Hizmet', {{ up.suggested_wa_msg | tojson }})" class="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-extrabold text-xs rounded-xl transition shadow-md flex items-center justify-center gap-1.5 shrink-0">
+                            <button 
+                                data-customer="{{ up.customer_name | forceescape }}"
+                                data-phone="{{ up.customer_phone | forceescape }}"
+                                data-type="Ek Hizmet"
+                                data-msg="{{ up.suggested_wa_msg | forceescape }}"
+                                onclick="handleAiModalClick(this)"
+                                class="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-extrabold text-xs rounded-xl transition shadow-md flex items-center justify-center gap-1.5 shrink-0">
                                 <i class="fa-brands fa-whatsapp text-sm"></i> TEKLİF GÖNDER
                             </button>
                         </div>
@@ -427,6 +467,7 @@
                         </div>
                         {% endfor %}
                     </div>
+
                 </div>
 
                 <!-- SAĞ 1 KOLON: BUGÜN YAPILMASI GEREKENLER (TOP 5 AI AKSIYONU) -->
@@ -452,7 +493,13 @@
                                     <span class="text-emerald-400 font-black shrink-0">+₺{{ "{:,.0f}".format(act.potential_revenue).replace(',', '.') }}</span>
                                 </div>
                                 <p class="text-[11px] text-slate-400">{{ act.description }}</p>
-                                <button onclick="openAiMessageModal('{{ act.customer_name }}', '{{ act.customer_phone }}', '{{ act.campaign_type }}', {{ act.suggested_wa_msg | tojson }})" class="w-full py-1.5 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-extrabold text-[11px] rounded-lg transition shadow flex items-center justify-center gap-1.5">
+                                <button 
+                                    data-customer="{{ act.customer_name | forceescape }}"
+                                    data-phone="{{ act.customer_phone | forceescape }}"
+                                    data-type="{{ act.campaign_type | forceescape }}"
+                                    data-msg="{{ act.suggested_wa_msg | forceescape }}"
+                                    onclick="handleAiModalClick(this)"
+                                    class="w-full py-1.5 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-extrabold text-[11px] rounded-lg transition shadow flex items-center justify-center gap-1.5">
                                     <i class="fa-brands fa-whatsapp text-xs"></i> {{ act.action_text }}
                                 </button>
                             </div>
@@ -462,9 +509,15 @@
                         </div>
                     </div>
                 </div>
+
             </div>
+
             {% endif %}
+
         </div>
+        <!-- ========================================================================= -->
+        <!-- AI CİRO RADARI BİTİŞ                                                     -->
+        <!-- ========================================================================= -->
 
         <!-- INSTAGRAM BIO LINK BANNER -->
         <div class="bg-gradient-to-r from-purple-900/60 via-slate-800 to-pink-900/60 border border-purple-500/30 rounded-2xl p-4 flex flex-col md:flex-row justify-between items-center gap-4 shadow-lg">
@@ -510,7 +563,7 @@
             </script>
         </div>
 
-        <!-- KASA KAZANÇ MOTORLARI & MÜŞTERİ ÇEKME MERKEZİ -->
+        <!-- KASA KAZANÇ MOTORLARI & MÜŞTERİ ÇEKME MERKEZİ (KLASİK 5 MOTOR) -->
         <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-4">
                 <div class="flex items-center gap-3">
@@ -681,9 +734,12 @@
             </div>
         </div>
 
-        <!-- MAIN OPERATIONAL TABS -->
+        <!-- MAIN OPERATIONAL TABS (TODAY'S APPOINTMENTS & PACKAGES) -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- LEFT 2 COLS: TODAY'S APPOINTMENT TABLE & ACTION BUTTONS -->
             <div class="lg:col-span-2 space-y-8">
+                
                 <div class="bg-slate-900 rounded-2xl border border-slate-800 p-6 shadow-xl">
                     <div class="flex justify-between items-center mb-6">
                         <div>
@@ -789,6 +845,7 @@
                                 <p class="text-xs text-purple-300 font-semibold mt-0.5">{{ pkg.package_name }}</p>
                             </div>
 
+                            <!-- Progress Bar -->
                             <div class="w-full md:w-64">
                                 <div class="flex justify-between text-xs font-extrabold mb-1">
                                     <span class="text-slate-400">Tamamlanan Seans</span>
@@ -800,6 +857,7 @@
                                 </div>
                             </div>
 
+                            <!-- Action -->
                             <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 pt-2 md:pt-0 border-slate-800">
                                 <div class="text-right">
                                     <span class="text-[10px] text-slate-400 block">Paket Tutarı</span>
@@ -819,10 +877,13 @@
                         {% endfor %}
                     </div>
                 </div>
+
             </div>
 
             <!-- RIGHT COLS: STAFF & SERVICES MANAGEMENT -->
             <div class="space-y-6">
+                
+                <!-- Staff Members List -->
                 <div class="bg-slate-900 rounded-2xl border border-slate-800 p-6 shadow-xl">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-base font-black text-white flex items-center gap-2">
@@ -849,6 +910,7 @@
                     </div>
                 </div>
 
+                <!-- Active Salon Services list -->
                 <div class="bg-slate-900 rounded-2xl border border-slate-800 p-6 shadow-xl">
                     <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
                         <div>
@@ -889,12 +951,16 @@
                         {% endfor %}
                     </div>
                 </div>
+
             </div>
+
         </div>
 
     </main>
 
-    <!-- AI WHATSAPP KİŞİSELLEŞTİRİLMİŞ MESAJ ÖNİZLEME MODALI -->
+    <!-- ========================================================================= -->
+    <!-- AI WHATSAPP KİŞİSELLEŞTİRİLMİŞ MESAJ ÖNİZLEME MODALI                      -->
+    <!-- ========================================================================= -->
     <div id="ai-msg-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center z-50 hidden p-4">
         <div class="bg-slate-900 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border-2 border-pink-500/50 relative text-white space-y-4">
             <button onclick="closeAiMessageModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
@@ -945,7 +1011,9 @@
         </div>
     </div>
 
-    <!-- "BU AY SANA NE KAZANDIRDIK?" AI ROI ATTRIBUTION RAPORU MODALI -->
+    <!-- ========================================================================= -->
+    <!-- "BU AY SANA NE KAZANDIRDIK?" AI ROI ATTRIBUTION RAPORU MODALI             -->
+    <!-- ========================================================================= -->
     <div id="ai-roi-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center z-50 hidden p-4">
         <div class="bg-slate-900 rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border-2 border-emerald-500/60 relative text-white space-y-6">
             <button onclick="closeRoiReportModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white text-lg">
@@ -1238,6 +1306,7 @@
             if (el) { el.scrollIntoView({ behavior: 'smooth' }); }
         }
 
+        // AI Radar Sekme Değiştirici
         function switchAiTab(tabName) {
             var tabs = ['winback', 'package_renewal', 'empty_slots', 'upsell', 'ltv'];
             tabs.forEach(function(t) {
@@ -1260,12 +1329,21 @@
             });
         }
 
+        // AI WhatsApp Önizleme Modalı Açma (Data attribute'lardan çağrılır)
+        function handleAiModalClick(btn) {
+            var customer = btn.getAttribute('data-customer') || 'Değerli Müşterimiz';
+            var phone = btn.getAttribute('data-phone') || '';
+            var type = btn.getAttribute('data-type') || 'AI Fırsatı';
+            var msg = btn.getAttribute('data-msg') || '';
+            openAiMessageModal(customer, phone, type, msg);
+        }
+
         function openAiMessageModal(customerName, customerPhone, campaignType, suggestedMessage) {
-            document.getElementById('ai-modal-cust-name').innerText = customerName;
-            document.getElementById('ai-modal-phone').value = customerPhone;
-            document.getElementById('ai-modal-camp-type').innerText = campaignType;
-            document.getElementById('ai-modal-campaign-hidden').value = campaignType;
-            document.getElementById('ai-modal-textarea').value = suggestedMessage;
+            document.getElementById('ai-modal-cust-name').innerText = customerName || 'Değerli Müşterimiz';
+            document.getElementById('ai-modal-phone').value = customerPhone || '';
+            document.getElementById('ai-modal-camp-type').innerText = campaignType || 'AI Fırsatı';
+            document.getElementById('ai-modal-campaign-hidden').value = campaignType || 'AI Fırsatı';
+            document.getElementById('ai-modal-textarea').value = suggestedMessage || '';
             document.getElementById('ai-msg-modal').classList.remove('hidden');
         }
 
@@ -1273,17 +1351,14 @@
             document.getElementById('ai-msg-modal').classList.add('hidden');
         }
 
+        // WhatsApp İle Gönder & Gelir Attribution'ı Kaydet
         async function submitAndSendAiWhatsApp() {
             var name = document.getElementById('ai-modal-cust-name').innerText;
             var phone = document.getElementById('ai-modal-phone').value;
             var campaignType = document.getElementById('ai-modal-campaign-hidden').value;
             var msgText = document.getElementById('ai-modal-textarea').value.trim();
 
-            if (!phone) {
-                alert("Müşteri telefon numarası bulunamadı.");
-                return;
-            }
-
+            // 1. Arka planda kampanyayı kaydet (Gelir Attribution için)
             try {
                 await fetch('/api/ai/log-campaign', {
                     method: 'POST',
@@ -1299,20 +1374,27 @@
                 console.error("Kampanya loglama hatası:", err);
             }
 
-            var cleanPhone = phone.replace(/\D/g, '');
-            if (!cleanPhone.startsWith('90')) {
-                if (cleanPhone.startsWith('0')) {
-                    cleanPhone = '90' + cleanPhone.substring(1);
-                } else {
-                    cleanPhone = '90' + cleanPhone;
+            // 2. Telefon numarasını temizle ve WhatsApp'ta aç
+            var cleanPhone = phone ? phone.replace(/\D/g, '') : '';
+            if (cleanPhone) {
+                if (!cleanPhone.startsWith('90')) {
+                    if (cleanPhone.startsWith('0')) {
+                        cleanPhone = '90' + cleanPhone.substring(1);
+                    } else {
+                        cleanPhone = '90' + cleanPhone;
+                    }
                 }
             }
 
-            var waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msgText)}`;
+            var waUrl = cleanPhone 
+                ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msgText)}`
+                : `https://wa.me/?text=${encodeURIComponent(msgText)}`;
+
             window.open(waUrl, '_blank');
             closeAiMessageModal();
         }
 
+        // ROI Raporu Modalı
         function openRoiReportModal() {
             document.getElementById('ai-roi-modal').classList.remove('hidden');
         }
